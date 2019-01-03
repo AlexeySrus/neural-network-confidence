@@ -1,0 +1,19 @@
+visualization:
+  use_visdom: True
+  visdom_port: 9015
+  visdom_server: "http://localhost"
+
+train:
+  lr: 0.001
+  
+  batch_size: 48
+  number_of_processes: 4
+
+  save:
+    model: '../../data/weights/blocks_15_bs_48_even'
+    every: 10
+
+  load: True
+
+validation:
+  use_validation: True
