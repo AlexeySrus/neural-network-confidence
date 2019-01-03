@@ -58,7 +58,7 @@ class VisPlot(object):
 
         self.windows[name] = [None, [], [], [], options]
 
-    def update_scatterplot(self, name, x, y1, y2=None, avg=100):
+    def update_scatterplot(self, name, x, y1, y2=None, avg=10):
 
         if y2 is None:
             self.windows[name][0] = self.viz.line(
@@ -102,24 +102,6 @@ class VisPlot(object):
     def per_epoch(self, args, keyward='per_epoch'):
         for win in self.windows.keys():
             if keyward in win:
-                if 'train' in win:
-                    self.windows[win][1].append(args['n'])
-                    self.windows[win][2].append(args['loss'])
-                    self.update_scatterplot(
-                        win,
-                        self.windows[win][1],
-                        self.windows[win][2]
-                    )
-
-                if 'validation' in win:
-                    self.windows[win][1].append(args['n'])
-                    self.windows[win][2].append(args['val loss'])
-                    self.update_scatterplot(
-                        win,
-                        self.windows[win][1],
-                        self.windows[win][2]
-                    )
-
                 if 'train' in win and 'validation' in win:
                     self.windows[win][1].append(args['n'])
                     self.windows[win][2].append(args['loss'])

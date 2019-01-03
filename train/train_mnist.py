@@ -3,10 +3,13 @@ import argparse
 import os
 from model.architectures import MNISTNet
 from model.model import Model, get_last_epoch_weights_path
+import torch.nn.functional as F
 from utils.losses import l2
 from utils.callbacks import (SaveModelPerEpoch, VisPlot,
                                       SaveOptimizerPerEpoch)
 from torch.utils.data import DataLoader
+from utils.loader import load_mnist, get_loaders
+from torch.nn import CrossEntropyLoss
 import yaml
 
 
@@ -89,21 +92,25 @@ def main():
             model.load(weight_path)
             optimizer.load_state_dict(torch.load(optim_path))
 
+    train_loader, val_loader = get_loaders(load_mnist())
+
+    train_dataset = DataLoader(
+        train_loader, batch_size=batch_size, num_workers=n_jobs
+    )
+
+    val_dataset = DataLoader(
+        val_loader, batch_size=batch_size, num_workers=n_jobs
+    )
+
     model.fit(
         train_dataset,
         optimizer,
         args.epochs,
-        ColorDiffLoss(),
-        init_start_epoch=start_epoch
+        F.nll_loss,
+        init_start_epoch=start_epoch,
+        validation_loader=val_dataset
     )
 
-    model.save(os.path.join(
-            os.path.dirname(__file__),
-            os.path.join(
-                config['train']['save']['model'],
-                'model-final.trh'
-            )
-    ))
 
 if __name__ == '__main__':
     main()

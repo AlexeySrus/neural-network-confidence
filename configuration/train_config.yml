@@ -1,17 +1,17 @@
 visualization:
   use_visdom: True
-  visdom_port: 9015
+  visdom_port: 9000
   visdom_server: "http://localhost"
 
 train:
   lr: 0.001
   
-  batch_size: 48
+  batch_size: 15000
   number_of_processes: 4
 
   save:
-    model: '../../data/weights/blocks_15_bs_48_even'
-    every: 10
+    model: '../data/weights/mnist/'
+    every: 100
 
   load: True
 
