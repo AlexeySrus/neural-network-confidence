@@ -9,7 +9,6 @@ from utils.callbacks import (SaveModelPerEpoch, VisPlot,
                                       SaveOptimizerPerEpoch)
 from torch.utils.data import DataLoader
 from utils.loader import load_mnist, get_loaders
-from torch.nn import CrossEntropyLoss
 import yaml
 
 
@@ -106,7 +105,7 @@ def main():
         train_dataset,
         optimizer,
         args.epochs,
-        F.nll_loss,
+        F.binary_cross_entropy,
         init_start_epoch=start_epoch,
         validation_loader=val_dataset
     )

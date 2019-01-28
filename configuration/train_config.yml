@@ -6,7 +6,7 @@ visualization:
 train:
   lr: 0.001
   
-  batch_size: 15000
+  batch_size: 64
   number_of_processes: 4
 
   save:

@@ -1,6 +1,7 @@
 import torch
 import tqdm
 import os
+import re
 from utils.losses import l2
 
 
@@ -40,6 +41,7 @@ class Model:
                 for i, (_x, _y_true) in enumerate(train_loader):
                     x = _x.to(self.device)
                     y_true = _y_true.to(self.device)
+
                     optimizer.zero_grad()
                     y_pred = self.model(x)
                     loss = loss_function(y_pred, y_true)
@@ -106,9 +108,9 @@ class Model:
                 x = _x.to(self.device)
                 y_true = _y_true.to(self.device)
                 y_pred = self.model(x)
-                test_loss += loss_function(y_pred, y_true).item()
-
-        test_loss /= len(test_loader)
+                test_loss += loss_function(
+                    y_pred, y_true
+                ).item() / len(test_loader)
 
         return test_loss
 
