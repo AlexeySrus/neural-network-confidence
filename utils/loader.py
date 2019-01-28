@@ -41,6 +41,11 @@ def load_mnist():
     return x_train, one_hot_mnist(y_train), x_test, one_hot_mnist(y_test)
 
 
+def load_mnist_for_ae():
+    x_train, y_train, x_test, y_test = load_mnist()
+    return x_train, x_train, x_test, x_test
+
+
 def get_loaders(load_data):
     x_train, y_train, x_test, y_test = load_data
     return Loader(x_train, y_train), Loader(x_test, y_test)

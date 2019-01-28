@@ -1,18 +1,18 @@
 import torch
 import argparse
 import os
-from model.architectures import MNISTNet
+from model.architectures import MNISTNet, ConfidenceAE
 from model.model import Model, get_last_epoch_weights_path
 import torch.nn.functional as F
 from utils.callbacks import (SaveModelPerEpoch, VisPlot,
                                       SaveOptimizerPerEpoch)
 from torch.utils.data import DataLoader
-from utils.loader import load_mnist, get_loaders
+from utils.loader import load_mnist_for_ae, get_loaders
 import yaml
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='MNIST train script')
+    parser = argparse.ArgumentParser(description='AE train script')
     parser.add_argument('--config', required=True, type=str,
                         help='Path to configuration yml file.')
     parser.add_argument('--epochs', type=int, default=1, metavar='N',
@@ -34,7 +34,10 @@ def main():
     batch_size = config['train']['batch_size']
     n_jobs = config['train']['number_of_processes']
 
-    model = Model(MNISTNet(), device)
+    base_model = Model(MNISTNet(), device)
+    base_model.load(config['train']['base_model_weights'])
+
+    model = Model(ConfidenceAE(base_model.model))
 
     callbacks = []
 
@@ -90,7 +93,7 @@ def main():
             model.load(weight_path)
             optimizer.load_state_dict(torch.load(optim_path))
 
-    train_loader, val_loader = get_loaders(load_mnist())
+    train_loader, val_loader = get_loaders(load_mnist_for_ae())
 
     train_dataset = DataLoader(
         train_loader, batch_size=batch_size, num_workers=n_jobs

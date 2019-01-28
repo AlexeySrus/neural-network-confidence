@@ -5,15 +5,17 @@ visualization:
 
 train:
   lr: 0.001
-  
+
   batch_size: 64
   number_of_processes: 4
 
   save:
-    model: '../data/weights/mnist/'
-    every: 100
+    model: '../data/weights/ae/'
+    every: 10
 
   load: True
+
+  base_model_weights: '../data/weights/mnist/model-70.trh'
 
 validation:
   use_validation: True

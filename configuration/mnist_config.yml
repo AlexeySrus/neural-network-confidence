@@ -1,0 +1,19 @@
+visualization:
+  use_visdom: True
+  visdom_port: 9000
+  visdom_server: "http://localhost"
+
+train:
+  lr: 0.001
+  
+  batch_size: 25000
+  number_of_processes: 4
+
+  save:
+    model: '../data/weights/mnist/'
+    every: 10
+
+  load: True
+
+validation:
+  use_validation: True
