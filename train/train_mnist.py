@@ -2,6 +2,7 @@ import torch
 import argparse
 import os
 from model.architectures import MNISTNet
+from model.resnet import ResNet18
 from model.model import Model, get_last_epoch_weights_path
 import torch.nn.functional as F
 from utils.callbacks import (SaveModelPerEpoch, VisPlot,
@@ -34,7 +35,7 @@ def main():
     batch_size = config['train']['batch_size']
     n_jobs = config['train']['number_of_processes']
 
-    model = Model(MNISTNet(), device)
+    model = Model(ResNet18(), device)
 
     callbacks = []
 

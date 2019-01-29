@@ -68,7 +68,7 @@ class VisPlot(AbstractCallback):
 
         self.windows[name] = [None, [], [], [], options]
 
-    def update_scatterplot(self, name, x, y1, y2=None, avg=10):
+    def update_scatterplot(self, name, x, y1, y2=None, avg=2):
 
         if y2 is None:
             self.windows[name][0] = self.viz.line(

@@ -1,7 +1,7 @@
 import torch
 import argparse
 import os
-from model.architectures import MNISTNet, ConfidenceAE
+from model.resnet import ResNet18, ConfidenceAE
 from model.model import Model, get_last_epoch_weights_path
 import torch.nn.functional as F
 from utils.callbacks import (SaveModelPerEpoch, VisPlot,
@@ -35,7 +35,7 @@ def main():
     batch_size = config['train']['batch_size']
     n_jobs = config['train']['number_of_processes']
 
-    base_model = Model(MNISTNet(), device)
+    base_model = Model(ResNet18(), device)
     base_model.load(config['train']['base_model_weights'])
 
     model = Model(ConfidenceAE(base_model.model), device)

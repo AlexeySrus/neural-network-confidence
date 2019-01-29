@@ -10,13 +10,13 @@ train:
   number_of_processes: 4
 
   save:
-    model: '../data/weights/cifar10/ae/'
-    every: 10
+    model: '../data/weights/mnist/ae/'
+    every: 1
 
-  load: False
+  load: True
 
-  base_model_weights: '../data/weights/cifar10/model-70.trh'
-  ae_model_weights: '../data/weights/cifar10/ae/model-10.trh'
+  base_model_weights: '../data/weights/mnist/model-1.trh'
+  ae_model_weights: '../data/weights/mnist/ae/model-8.trh'
 
   image:
     every: 100

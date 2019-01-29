@@ -1,7 +1,7 @@
 import torch
 import argparse
 import tqdm
-from model.architectures import MNISTNet, ConfidenceAE
+from model.resnet import ResNet18, ConfidenceAE
 from model.model import Model
 from utils.callbacks import VisImageForAE
 from utils.loader import load_mnist, get_loaders
@@ -52,7 +52,7 @@ def main():
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
 
-    base_model = Model(MNISTNet(), device)
+    base_model = Model(ResNet18(), device)
     base_model.load(config['train']['base_model_weights'])
     ae_model = Model(ConfidenceAE(base_model.model), device)
     ae_model.load(config['train']['ae_model_weights'])
@@ -80,13 +80,13 @@ def main():
         2: 270
     }
 
-    for i in range(100):
+    for i in tqdm.tqdm(range(1000)):
         x, y_true = val_loader[i]
 
         x = torch.FloatTensor(x).to(device).unsqueeze(0)
 
         x = torch.clamp(
-            x + torch.FloatTensor(1, 1, 28, 28).to(device).normal_(0, 0.2),
+            x + torch.FloatTensor(1, 1, 28, 28).to(device).normal_(0, 0.0),
             0, 1
         )
 
@@ -101,7 +101,7 @@ def main():
         y_pred1 = y_pred1.detach().to('cpu').numpy()
         y_pred2 = y_pred2.detach().to('cpu').numpy()
 
-        if conf < args.confidence:
+        if False and conf < args.confidence:
             print(
                 'i:', k,
                 'y_true:', y_true.argmax(), 'y_pred1:',  y_pred1.argmax(),
@@ -125,6 +125,33 @@ def main():
 
     print('Default accuracy:', accuracy_score(y, y1))
     print('AE accuracy:', accuracy_score(y, y_by_ae))
+
+    y = []
+    y1 = []
+
+    for i in tqdm.tqdm(range(10000)):
+        x, y_true = val_loader[i]
+
+        x = torch.FloatTensor(x).to(device).unsqueeze(0)
+
+        x = torch.clamp(
+            x + torch.FloatTensor(1, 1, 28, 28).to(device).normal_(0, 0.0),
+            0, 1
+        )
+
+        y_pred1, y_pred2, conf, x_gen = classification_with_confidence(
+            x,
+            base_model.model,
+            ae_model.model
+        )
+
+        y_pred1 = y_pred1.detach().to('cpu').numpy()
+
+        if conf > args.confidence:
+            y.append(y_true.argmax())
+            y1.append(y_pred1.argmax())
+
+    print('Accuracy by confidence:', accuracy_score(y, y1))
 
 
 if __name__ == '__main__':

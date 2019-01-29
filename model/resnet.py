@@ -61,7 +61,7 @@ class ResNet(nn.Module):
         super(ResNet, self).__init__()
         self.in_planes = 64
 
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+        self.conv1 = nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.layer1 = self._make_layer(block, 64, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 128, num_blocks[1], stride=2)
@@ -78,16 +78,40 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        x = F.interpolate(x, scale_factor=(2, 2))
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.layer1(out)
         out = self.layer2(out)
         out = self.layer3(out)
         out = self.layer4(out)
+        out_4 = out
         out = F.avg_pool2d(out, 4)
         out = out.view(out.size(0), -1)
         out = self.linear(out)
-        return out
+        return F.softmax(out, dim=1), out_4
 
 
 def ResNet18():
     return ResNet(BasicBlock, [2,2,2,2])
+
+
+class ConfidenceAE(nn.Module):
+    def __init__(self, basic_net):
+        super(ConfidenceAE, self).__init__()
+
+        self.basic_net = basic_net
+        self.basic_net.eval()
+
+        for p in self.basic_net.parameters():
+            p.requires_grad = False
+
+        self.fc1 = nn.Linear(512*7*7, 1000)
+        self.fc2 = nn.Linear(1000, 28*28)
+
+    def forward(self, x):
+        _, x1 = self.basic_net(x)
+        x1 = x1.view(-1, 512*7*7)
+        x = F.relu(self.fc1(x1))
+        x = torch.sigmoid(self.fc2(x))
+        x = x.view(-1, 1, 28, 28)
+        return x
