@@ -1,10 +1,20 @@
 import os
 import torch
+import random
 import numpy as np
 from visdom import Visdom
+import torch.nn.functional as F
 
 
-class SaveModelPerEpoch:
+class AbstractCallback(object):
+    def per_batch(self, args):
+        raise RuntimeError("Don\'t implement batch callback method")
+
+    def per_epoch(self, args):
+        raise RuntimeError("Don\'t implement epoch callback method")
+
+
+class SaveModelPerEpoch(AbstractCallback):
     def __init__(self, path, save_step=1):
         self.path = path
         self.step=save_step
@@ -22,7 +32,7 @@ class SaveModelPerEpoch:
             )
 
 
-class SaveOptimizerPerEpoch:
+class SaveOptimizerPerEpoch(AbstractCallback):
     def __init__(self, path, save_step=1):
         self.path = path
         self.step=save_step
@@ -43,7 +53,7 @@ class SaveOptimizerPerEpoch:
             ))
 
 
-class VisPlot(object):
+class VisPlot(AbstractCallback):
     def __init__(self, title, server='https://localhost', port=8080):
         self.viz = Visdom(server=server, port=port)
         self.windows = {}
@@ -112,3 +122,41 @@ class VisPlot(object):
                         self.windows[win][2],
                         self.windows[win][3]
                     )
+
+
+class VisImageForAE(AbstractCallback):
+    def __init__(self, title, server='https://localhost', port=8080,
+                 vis_step=1):
+        self.viz = Visdom(server=server, port=port)
+        self.title_true = title + ' original'
+        self.title_pred = title + ' predicted'
+        self.window_true = None
+        self.window_pred = None
+        self.n = 0
+        self.step = vis_step
+
+        random.seed()
+
+    def per_batch(self, args):
+        if self.n % self.step == 0:
+            i = random.randint(0, args['y_true'].size(0) - 1)
+
+            self.window_true = self.viz.image(
+                F.interpolate(args['y_true'][i].unsqueeze(0),
+                              scale_factor=(10, 10)),
+                win=self.window_true,
+                opts=dict(title=self.title_true)
+            )
+            self.window_pred = self.viz.image(
+                F.interpolate(args['y_pred'][i].unsqueeze(0),
+                              scale_factor=(10, 10)),
+                win=self.window_pred,
+                opts=dict(title=self.title_pred)
+            )
+
+        self.n += 1
+        if self.n >= 1000000000:
+            self.n = 0
+
+    def per_epoch(self, args):
+        pass

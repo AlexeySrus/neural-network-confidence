@@ -53,16 +53,17 @@ class Model:
                                                             epochs,
                                                             loss.item()
                                                             )
-                    avg_epoch_loss += loss.item() / batches_count
+                    avg_epoch_loss += \
+                        loss.item() / train_loader.batch_size / batches_count
 
                     for cb in self.callbacks:
                         cb.per_batch({
                             'model': self,
-                            'loss': loss.item(),
+                            'loss': loss.item() / train_loader.batch_size,
                             'n': (epoch - 1)*batches_count + i + 1,
                             'x': x,
                             'y_pred': y_pred,
-                            'y_true:': y_true
+                            'y_true': y_true
                         })
 
                     pbar.update(1)
@@ -110,7 +111,7 @@ class Model:
                 y_pred = self.model(x)
                 test_loss += loss_function(
                     y_pred, y_true
-                ).item() / len(test_loader)
+                ).item() / test_loader.batch_size / len(test_loader)
 
         return test_loss
 

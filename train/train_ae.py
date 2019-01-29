@@ -5,7 +5,8 @@ from model.architectures import MNISTNet, ConfidenceAE
 from model.model import Model, get_last_epoch_weights_path
 import torch.nn.functional as F
 from utils.callbacks import (SaveModelPerEpoch, VisPlot,
-                                      SaveOptimizerPerEpoch)
+                                      SaveOptimizerPerEpoch,
+                                        VisImageForAE)
 from torch.utils.data import DataLoader
 from utils.loader import load_mnist_for_ae, get_loaders
 import yaml
@@ -71,6 +72,15 @@ def main():
                                        'validation binary cross entropy'
                                    ])
         callbacks.append(plots)
+
+        callbacks.append(
+            VisImageForAE(
+                'Image visualisation',
+                config['visualization']['visdom_server'],
+                config['visualization']['visdom_port'],
+                config['train']['image']['every']
+            )
+        )
 
     model.set_callbacks(callbacks)
 

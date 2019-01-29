@@ -66,16 +66,18 @@ class ConfidenceAE(nn.Module):
         self.basic_net = basic_net
         self.basic_net.eval()
 
+        for p in self.basic_net.parameters():
+            p.requires_grad = False
+
         self.conv1 = nn.Conv2d(20, 50, 4, 1)
         self.conv2 = nn.Conv2d(50, 50, 2, 1)
         self.conv3 = nn.Conv2d(100, 20, 1, 1)
         self.conv4 = nn.Conv2d(20, 10, 3, 1, padding=4)
-        self.conv5 = nn.Conv2d(10, 1, 1, 1)
+        self.conv5 = nn.Conv2d(10, 5, 5, 1, padding=4)
+        self.fc1 = nn.Linear(1620, 28*28)
 
     def forward(self, x):
         _, x1, x2 = self.basic_net(x)
-        x1 = x1.detach()
-        x2 = x2.detach()
 
         x1 = F.relu(self.conv1(x1))
         x1 = F.relu(self.conv2(x1))
@@ -84,6 +86,7 @@ class ConfidenceAE(nn.Module):
         x = F.relu(self.conv3(x))
         x = F.interpolate(x, scale_factor=(2, 2))
         x = F.relu(self.conv4(x))
-        x = F.interpolate(x, scale_factor=(2, 2))
-        x = torch.sigmoid(self.conv5(x))
+        x = F.relu(self.conv5(x))
+        x = torch.sigmoid(self.fc1(x.view(-1, 1620)))
+        x = x.view(-1, 1, 28, 28)
         return x
