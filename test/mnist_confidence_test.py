@@ -80,13 +80,13 @@ def main():
         2: 270
     }
 
-    for i in range(1000):
+    for i in range(100):
         x, y_true = val_loader[i]
 
         x = torch.FloatTensor(x).to(device).unsqueeze(0)
 
         x = torch.clamp(
-            x + torch.FloatTensor(1, 1, 28, 28).normal_(0, 0),
+            x + torch.FloatTensor(1, 1, 28, 28).to(device).normal_(0, 0.2),
             0, 1
         )
 
@@ -98,10 +98,10 @@ def main():
             ae_model.model
         )
 
-        y_pred1 = y_pred1.detach().numpy()
-        y_pred2 = y_pred2.detach().numpy()
+        y_pred1 = y_pred1.detach().to('cpu').numpy()
+        y_pred2 = y_pred2.detach().to('cpu').numpy()
 
-        if conf < 0.5:
+        if conf < args.confidence:
             print(
                 'i:', k,
                 'y_true:', y_true.argmax(), 'y_pred1:',  y_pred1.argmax(),

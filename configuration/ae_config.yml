@@ -16,7 +16,7 @@ train:
   load: False
 
   base_model_weights: '../data/weights/mnist/model-70.trh'
-  ae_model_weights: '../data/weights/ae/model-10.trh'
+  ae_model_weights: '../data/weights/ae/model-100.trh'
 
   image:
     every: 100
