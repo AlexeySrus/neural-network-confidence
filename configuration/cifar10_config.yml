@@ -10,16 +10,10 @@ train:
   number_of_processes: 4
 
   save:
-    model: '../data/weights/cifar10/ae/'
+    model: '../data/weights/cifar10/'
     every: 10
 
-  load: False
-
-  base_model_weights: '../data/weights/cifar10/model-70.trh'
-  ae_model_weights: '../data/weights/cifar10/ae/model-10.trh'
-
-  image:
-    every: 100
+  load: True
 
 validation:
   use_validation: True

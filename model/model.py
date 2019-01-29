@@ -50,9 +50,9 @@ class Model:
 
                     pbar.postfix = \
                         'Epoch: {}/{}, Loss: {:.8f}'.format(epoch,
-                                                            epochs,
-                                                            loss.item()
-                                                            )
+                                        epochs,
+                                        loss.item() / train_loader.batch_size
+                                    )
                     avg_epoch_loss += \
                         loss.item() / train_loader.batch_size / batches_count
 

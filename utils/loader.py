@@ -1,4 +1,4 @@
-from keras.datasets import mnist
+from keras.datasets import mnist, cifar10
 from sklearn.utils import shuffle
 import numpy as np
 
@@ -41,8 +41,25 @@ def load_mnist():
     return x_train, one_hot_mnist(y_train), x_test, one_hot_mnist(y_test)
 
 
+def load_cifar10():
+    (x_train, y_train), (x_test, y_test) = cifar10.load_data()
+    x_train = (x_train.reshape((len(x_train), 1, 28, 28)) / 255.0).astype(
+        'float32'
+    )
+    x_test = (x_test.reshape((len(x_test), 1, 28, 28)) / 255.0).astype(
+        'float32'
+    )
+
+    return x_train, one_hot_mnist(y_train), x_test, one_hot_mnist(y_test)
+
+
 def load_mnist_for_ae():
     x_train, y_train, x_test, y_test = load_mnist()
+    return x_train, x_train, x_test, x_test
+
+
+def load_cifar10_for_ae():
+    x_train, y_train, x_test, y_test = load_cifar10()
     return x_train, x_train, x_test, x_test
 
 
