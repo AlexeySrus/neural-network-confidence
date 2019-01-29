@@ -38,7 +38,7 @@ def main():
     base_model = Model(MNISTNet(), device)
     base_model.load(config['train']['base_model_weights'])
 
-    model = Model(ConfidenceAE(base_model.model))
+    model = Model(ConfidenceAE(base_model.model), device)
 
     callbacks = []
 

@@ -7,7 +7,7 @@ from utils.losses import l2
 
 class Model:
     def __init__(self, net, _device='cpu', callbacks_list=None):
-        self.device = torch.device("cpu" if _device == 'cpu' else "cuda")
+        self.device = torch.device('cpu' if _device == 'cpu' else 'cuda')
         self.model = net.to(self.device)
         self.callbacks = [] if callbacks_list is None else callbacks_list
 

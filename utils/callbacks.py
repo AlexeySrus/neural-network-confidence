@@ -128,31 +128,30 @@ class VisImageForAE(AbstractCallback):
     def __init__(self, title, server='https://localhost', port=8080,
                  vis_step=1):
         self.viz = Visdom(server=server, port=port)
-        self.title_true = title + ' original'
-        self.title_pred = title + ' predicted'
-        self.window_true = None
-        self.window_pred = None
+        self.title = title + ' original|predicted'
+        self.windows = {1: None}
         self.n = 0
         self.step = vis_step
 
         random.seed()
 
-    def per_batch(self, args):
+    def per_batch(self, args, label=1):
         if self.n % self.step == 0:
             i = random.randint(0, args['y_true'].size(0) - 1)
 
-            self.window_true = self.viz.image(
-                F.interpolate(args['y_true'][i].unsqueeze(0),
-                              scale_factor=(10, 10)),
-                win=self.window_true,
-                opts=dict(title=self.title_true)
-            )
-            self.window_pred = self.viz.image(
-                F.interpolate(args['y_pred'][i].unsqueeze(0),
-                              scale_factor=(10, 10)),
-                win=self.window_pred,
-                opts=dict(title=self.title_pred)
-            )
+            for win in self.windows.keys():
+                if win == label:
+                    x = torch.cat(
+                        (args['y_true'][i], args['y_pred'][i]),
+                        dim=2
+                    )
+
+                    self.windows[win] = self.viz.image(
+                        F.interpolate(x.unsqueeze(0),
+                                      scale_factor=(10, 10)),
+                        win=self.windows[win],
+                        opts=dict(title=self.title)
+                    )
 
         self.n += 1
         if self.n >= 1000000000:
@@ -160,3 +159,6 @@ class VisImageForAE(AbstractCallback):
 
     def per_epoch(self, args):
         pass
+
+    def add_window(self, label):
+        self.windows[label] = None

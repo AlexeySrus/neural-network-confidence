@@ -3,38 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-def crop_batch_by_center(x, shape):
-    """
-    Crop target area from x image tensor by new shape, shape[:-2] < x.shape[:-2]
-    Args:
-        x: input image 4-D tensor
-        shape: result shape
-
-    Returns:
-        cropped image tensor
-    """
-    target_shape = shape[-2:]
-    input_tensor_shape = x.shape[-2:]
-
-    crop_by_y = (input_tensor_shape[0] - target_shape[0]) // 2
-    crop_by_x = (input_tensor_shape[1] - target_shape[1]) // 2
-
-    indexes_by_y = (
-        crop_by_y, input_tensor_shape[0] - crop_by_y
-    )
-
-    indexes_by_x = (
-        crop_by_x, input_tensor_shape[1] - crop_by_x
-    )
-
-    return x[
-           :,
-           :,
-           indexes_by_y[0]:indexes_by_y[1],
-           indexes_by_x[0]:indexes_by_x[1]
-           ]
-
-
 class MNISTNet(nn.Module):
     def __init__(self):
         super(MNISTNet, self).__init__()
@@ -55,8 +23,9 @@ class MNISTNet(nn.Module):
         x3 = F.max_pool2d(x2, 2, 2)
         x3v = x3.view(-1, 4*4*50)
         x4 = F.relu(self.fc1(x3v))
+        feat = x4
         x4 = self.fc2(x4)
-        return F.softmax(x4, dim=1), x1, x3
+        return F.softmax(x4, dim=1), feat
 
 
 class ConfidenceAE(nn.Module):
@@ -69,24 +38,12 @@ class ConfidenceAE(nn.Module):
         for p in self.basic_net.parameters():
             p.requires_grad = False
 
-        self.conv1 = nn.Conv2d(20, 50, 4, 1)
-        self.conv2 = nn.Conv2d(50, 50, 2, 1)
-        self.conv3 = nn.Conv2d(100, 20, 1, 1)
-        self.conv4 = nn.Conv2d(20, 10, 3, 1, padding=4)
-        self.conv5 = nn.Conv2d(10, 5, 5, 1, padding=4)
-        self.fc1 = nn.Linear(1620, 28*28)
+        self.fc1 = nn.Linear(500, 700)
+        self.fc2 = nn.Linear(700, 28*28)
 
     def forward(self, x):
-        _, x1, x2 = self.basic_net(x)
-
-        x1 = F.relu(self.conv1(x1))
-        x1 = F.relu(self.conv2(x1))
-        x1 = F.max_pool2d(x1, 2, 2)
-        x = torch.cat((x1, x2), dim=1)
-        x = F.relu(self.conv3(x))
-        x = F.interpolate(x, scale_factor=(2, 2))
-        x = F.relu(self.conv4(x))
-        x = F.relu(self.conv5(x))
-        x = torch.sigmoid(self.fc1(x.view(-1, 1620)))
+        _, x1 = self.basic_net(x)
+        x = F.relu(self.fc1(x1))
+        x = torch.sigmoid(self.fc2(x))
         x = x.view(-1, 1, 28, 28)
         return x
