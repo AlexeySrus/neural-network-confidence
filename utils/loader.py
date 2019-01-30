@@ -29,8 +29,20 @@ def one_hot_mnist(values):
     return np.array(res).astype('float32')
 
 
+def one_hot_cifar(values):
+    res = []
+
+    for v in values:
+        elem = [0]*10
+        elem[v[0]] = 1
+        res.append(elem)
+
+    return np.array(res).astype('float32')
+
+
 def load_mnist():
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
+
     x_train = (x_train.reshape((len(x_train), 1, 28, 28)) / 255.0).astype(
         'float32'
     )
@@ -43,14 +55,14 @@ def load_mnist():
 
 def load_cifar10():
     (x_train, y_train), (x_test, y_test) = cifar10.load_data()
-    x_train = (x_train.reshape((len(x_train), 1, 28, 28)) / 255.0).astype(
+    x_train = (x_train.reshape((len(x_train), 3, 32, 32)) / 255.0).astype(
         'float32'
     )
-    x_test = (x_test.reshape((len(x_test), 1, 28, 28)) / 255.0).astype(
+    x_test = (x_test.reshape((len(x_test), 3, 32, 32)) / 255.0).astype(
         'float32'
     )
 
-    return x_train, one_hot_mnist(y_train), x_test, one_hot_mnist(y_test)
+    return x_train, one_hot_cifar(y_train), x_test, one_hot_cifar(y_test)
 
 
 def load_mnist_for_ae():

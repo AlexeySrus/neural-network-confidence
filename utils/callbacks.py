@@ -66,61 +66,62 @@ class VisPlot(AbstractCallback):
                         xlabel=xlabel, ylabel=ylabel,
                         legend=legend)
 
-        self.windows[name] = [None, [], [], [], options]
+        self.windows[name] = [None, options]
 
-    def update_scatterplot(self, name, x, y1, y2=None, avg=2):
-
+    def update_scatterplot(self, name, x, y1, y2=None, window_size=100):
+        """
+        Update plot
+        Args:
+            name: name of updating plot
+            x: x values for plotting
+            y1: y values for plotting
+            y2: plot can contains two graphs
+            window_size: window size for plot smoothing (by mean in window)
+        Returns:
+        """
         if y2 is None:
             self.windows[name][0] = self.viz.line(
-                np.convolve(y1, (1 / avg,) * avg, mode='valid'),
-                np.convolve(x, (1 / avg,) * avg, mode='valid'),
+                np.array([y1], dtype=np.float32),
+                np.array([x], dtype=np.float32),
                 win=self.windows[name][0],
-                opts=self.windows[name][4]
+                opts=self.windows[name][1],
+                update='append' if self.windows[name][0] is not None else None
             )
         else:
             self.windows[name][0] = self.viz.line(
-                np.transpose(
-                    np.array([np.convolve(y1, (1 / avg,) * avg, mode='valid'),
-                              np.convolve(y2, (1 / avg,) * avg, mode='valid')])
-                ),
-                np.convolve(x, (1 / avg,) * avg, mode='valid'),
+                np.array([[y1, y2]], dtype=np.float32),
+                np.array([x], dtype=np.float32),
                 win=self.windows[name][0],
-                opts=self.windows[name][4]
+                opts=self.windows[name][1],
+                update='append' if self.windows[name][0] is not None else None
             )
 
     def per_batch(self, args, keyward='per_batch'):
         for win in self.windows.keys():
             if keyward in win:
                 if 'train' in win:
-                    self.windows[win][1].append(args['n'])
-                    self.windows[win][2].append(args['loss'])
                     self.update_scatterplot(
                         win,
-                        self.windows[win][1],
-                        self.windows[win][2]
+                        args['n'],
+                        args['loss']
                     )
 
                 if 'validation' in win:
-                    self.windows[win][1].append(args['n'])
-                    self.windows[win][2].append(args['val loss'])
                     self.update_scatterplot(
                         win,
-                        self.windows[win][1],
-                        self.windows[win][2]
+                        args['n'],
+                        args['val loss']
                     )
 
     def per_epoch(self, args, keyward='per_epoch'):
         for win in self.windows.keys():
             if keyward in win:
                 if 'train' in win and 'validation' in win:
-                    self.windows[win][1].append(args['n'])
-                    self.windows[win][2].append(args['loss'])
-                    self.windows[win][3].append(args['val loss'])
                     self.update_scatterplot(
                         win,
-                        self.windows[win][1],
-                        self.windows[win][2],
-                        self.windows[win][3]
+                        args['n'],
+                        args['loss'],
+                        args['val loss']
                     )
 
 
