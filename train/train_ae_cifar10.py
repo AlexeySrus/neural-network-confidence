@@ -1,19 +1,19 @@
 import torch
 import argparse
 import os
-from model.resnet import ResNet18
+from model.resnet import ResNet18, ConfidenceAE
 from model.model import Model, get_last_epoch_weights_path
 import torch.nn.functional as F
-from torch.nn import CrossEntropyLoss
 from utils.callbacks import (SaveModelPerEpoch, VisPlot,
-                                      SaveOptimizerPerEpoch)
+                                      SaveOptimizerPerEpoch,
+                                        VisImageForAE)
 from torch.utils.data import DataLoader
-from utils.loader import load_cifar10, get_loaders
+from utils.loader import load_cifar10_for_ae, get_loaders
 import yaml
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='MNIST train script')
+    parser = argparse.ArgumentParser(description='AE train script')
     parser.add_argument('--config', required=True, type=str,
                         help='Path to configuration yml file.')
     parser.add_argument('--epochs', type=int, default=1, metavar='N',
@@ -35,7 +35,10 @@ def main():
     batch_size = config['train']['batch_size']
     n_jobs = config['train']['number_of_processes']
 
-    model = Model(ResNet18(), device)
+    base_model = Model(ResNet18(), device)
+    base_model.load(config['train']['base_model_weights'])
+
+    model = Model(ConfidenceAE(base_model.model), device)
 
     callbacks = []
 
@@ -70,6 +73,15 @@ def main():
                                    ])
         callbacks.append(plots)
 
+        callbacks.append(
+            VisImageForAE(
+                'Image visualisation',
+                config['visualization']['visdom_server'],
+                config['visualization']['visdom_port'],
+                config['train']['image']['every']
+            )
+        )
+
     model.set_callbacks(callbacks)
 
     start_epoch = 1
@@ -91,7 +103,7 @@ def main():
             model.load(weight_path)
             optimizer.load_state_dict(torch.load(optim_path))
 
-    train_loader, val_loader = get_loaders(load_cifar10())
+    train_loader, val_loader = get_loaders(load_cifar10_for_ae())
 
     train_dataset = DataLoader(
         train_loader, batch_size=batch_size, num_workers=n_jobs
@@ -105,7 +117,7 @@ def main():
         train_dataset,
         optimizer,
         args.epochs,
-        F.binary_cross_entropy_with_logits,
+        F.binary_cross_entropy,
         init_start_epoch=start_epoch,
         validation_loader=val_dataset
     )

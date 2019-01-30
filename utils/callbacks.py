@@ -149,7 +149,7 @@ class VisImageForAE(AbstractCallback):
 
                     self.windows[win] = self.viz.image(
                         F.interpolate(x.unsqueeze(0),
-                                      scale_factor=(10, 10)),
+                                      scale_factor=(10, 10)).squeeze(),
                         win=self.windows[win],
                         opts=dict(title=self.title)
                     )

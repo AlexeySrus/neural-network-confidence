@@ -55,12 +55,12 @@ def load_mnist():
 
 def load_cifar10():
     (x_train, y_train), (x_test, y_test) = cifar10.load_data()
-    x_train = (x_train.reshape((len(x_train), 3, 32, 32)) / 255.0).astype(
+    x_train = (x_train.reshape((len(x_train), 32, 32, 3)) / 255.0).astype(
         'float32'
-    )
-    x_test = (x_test.reshape((len(x_test), 3, 32, 32)) / 255.0).astype(
+    ).transpose(0, 3, 1, 2)
+    x_test = (x_test.reshape((len(x_test), 32, 32, 3)) / 255.0).astype(
         'float32'
-    )
+    ).transpose(0, 3, 1, 2)
 
     return x_train, one_hot_cifar(y_train), x_test, one_hot_cifar(y_test)
 

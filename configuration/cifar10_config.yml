@@ -6,14 +6,14 @@ visualization:
 train:
   lr: 0.001
 
-  batch_size: 1024
+  batch_size: 512
   number_of_processes: 4
 
   save:
     model: '../data/weights/cifar10/'
     every: 10
 
-  load: True
+  load: False
 
 validation:
   use_validation: True
