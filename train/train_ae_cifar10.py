@@ -13,7 +13,7 @@ import yaml
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='AE train script')
+    parser = argparse.ArgumentParser(description='CIFAR10 AE train script')
     parser.add_argument('--config', required=True, type=str,
                         help='Path to configuration yml file.')
     parser.add_argument('--epochs', type=int, default=1, metavar='N',
@@ -60,7 +60,7 @@ def main():
 
     if config['visualization']['use_visdom']:
         plots = VisPlot(
-            'MNIST classification model',
+            'CIFAR10 classification model',
             server=config['visualization']['visdom_server'],
             port=config['visualization']['visdom_port']
         )
@@ -117,7 +117,7 @@ def main():
         train_dataset,
         optimizer,
         args.epochs,
-        F.binary_cross_entropy,
+        F.l1_loss,
         init_start_epoch=start_epoch,
         validation_loader=val_dataset
     )
