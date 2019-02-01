@@ -232,8 +232,8 @@ class ResNet18(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(16, classes)
 
-        for p in self.net.parameters():
-            p.requires_grad = False
+        #for p in self.net.parameters():
+        #    p.requires_grad = False
 
     def forward(self, x):
         x = F.interpolate(x, scale_factor=(7, 7))
@@ -246,7 +246,7 @@ class ResNet18(nn.Module):
         x = self.avgpool(x)
         x = x.view(-1, 16)
         x = self.fc(x)
-        return F.softmax(x, dim=1), f
+        return F.softmax(x, dim=1)
 
 
 class ConfidenceAE(nn.Module):

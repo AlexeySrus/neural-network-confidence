@@ -1,0 +1,21 @@
+visualization:
+  use_visdom: True
+  visdom_port: 9000
+  visdom_server: "http://localhost"
+
+train:
+  data: '../../HandwrittenCharacterGenerator/data/'
+
+  lr: 0.001
+
+  batch_size: 8
+  number_of_processes: 4
+
+  save:
+    model: '../data/weights/nist19/'
+    every: 10
+
+  load: False
+
+validation:
+  use_validation: True

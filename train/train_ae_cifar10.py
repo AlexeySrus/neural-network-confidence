@@ -1,14 +1,14 @@
 import torch
 import argparse
 import os
-from model.resnet import ResNet18, ConfidenceAE
+from model.cifar10_resnet import ResNet18, ConfidenceAE
 from model.model import Model, get_last_epoch_weights_path
 import torch.nn.functional as F
 from utils.callbacks import (SaveModelPerEpoch, VisPlot,
                                       SaveOptimizerPerEpoch,
                                         VisImageForAE)
 from torch.utils.data import DataLoader
-from utils.loader import load_cifar10_for_ae, get_loaders
+from utils.loaders import load_cifar10_for_ae, get_loaders
 import yaml
 
 

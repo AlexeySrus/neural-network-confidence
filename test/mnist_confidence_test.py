@@ -1,10 +1,10 @@
 import torch
 import argparse
 import tqdm
-from model.resnet import ResNet18, ConfidenceAE
+from model.cifar10_resnet import ResNet18, ConfidenceAE
 from model.model import Model
 from utils.callbacks import VisImageForAE
-from utils.loader import load_mnist, get_loaders
+from utils.loaders import load_mnist, get_loaders
 from utils.confidence_prediction import classification_with_confidence
 from sklearn.metrics import accuracy_score
 import yaml

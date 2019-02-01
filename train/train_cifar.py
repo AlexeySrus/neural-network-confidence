@@ -1,14 +1,14 @@
 import torch
 import argparse
 import os
-from model.resnet import ResNet18
+from model.cifar10_resnet import ResNet18
 from model.model import Model, get_last_epoch_weights_path
 import torch.nn.functional as F
 from torch.nn import CrossEntropyLoss
 from utils.callbacks import (SaveModelPerEpoch, VisPlot,
                                       SaveOptimizerPerEpoch)
 from torch.utils.data import DataLoader
-from utils.loader import load_cifar10, get_loaders
+from utils.loaders import load_cifar10, get_loaders
 import yaml
 
 
