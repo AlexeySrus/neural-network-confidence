@@ -8,7 +8,7 @@ class NIST19Net(nn.Module):
         super(NIST19Net, self).__init__()
         self.conv1 = nn.Conv2d(1, 20, 5, 1)
         self.conv2 = nn.Conv2d(20, 50, 5, 1)
-        self.fc1 = nn.Linear(30*30*50, 500)
+        self.fc1 = nn.Linear(15*15*50, 500)
         self.fc2 = nn.Linear(500, classes)
         self.dropout = nn.Dropout(0.5)
 
@@ -21,7 +21,7 @@ class NIST19Net(nn.Module):
         if self.training:
             self.dropout(x2)
         x3 = F.max_pool2d(x2, 2, 2)
-        x3v = x3.view(-1, 30*30*50)
+        x3v = x3.view(-1, 15*15*50)
         x4 = F.relu(self.fc1(x3v))
         feat = x4
         x4 = self.fc2(x4)

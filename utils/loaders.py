@@ -84,9 +84,9 @@ class NIST19Loader:
         img = cv2.imread(self.x[idx], 0)
 
         if img is None:
-            if idx >= len(self.x):
+            if idx < len(self.x):
                 return self[idx - 1]
-            return self[idx + 1]
+            img = np.zeros(shape=self.shape)
 
         img = resize_image(img, self.shape)
         img = np.expand_dims(img, axis=0)
