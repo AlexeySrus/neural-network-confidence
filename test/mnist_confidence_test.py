@@ -1,7 +1,7 @@
 import torch
 import argparse
 import tqdm
-from model.cifar10_resnet import ResNet18, ConfidenceAE
+from model.mnist_architectures import MNISTNet, ConfidenceAE
 from model.model import Model
 from utils.callbacks import VisImageForAE
 from utils.loaders import load_mnist, get_loaders
@@ -11,11 +11,9 @@ import yaml
 import numpy as np
 
 import matplotlib
-try:
-    from matplotlib import pyplot as plt
-except:
-    matplotlib.use('TkAgg')
-    from matplotlib import pyplot as plt
+
+matplotlib.use('TkAgg')
+from matplotlib import pyplot as plt
 
 
 def parse_args():
@@ -38,7 +36,7 @@ def main():
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
 
-    base_model = Model(ResNet18(), device)
+    base_model = Model(MNISTNet(), device)
     base_model.load(config['train']['base_model_weights'])
     ae_model = Model(ConfidenceAE(base_model.model), device)
     ae_model.load(config['train']['ae_model_weights'])
@@ -133,7 +131,7 @@ def main():
     #
     # print('Accuracy by confidence:', accuracy_score(y, y1))
 
-    N = 1000
+    N = 5000
 
     conf_x = np.arange(0, 1, 0.05)[:-1]
     acc_y = []
@@ -149,7 +147,7 @@ def main():
             x = torch.FloatTensor(x).to(device).unsqueeze(0)
 
             x = torch.clamp(
-                x + torch.FloatTensor(1, 1, 72, 72).to(device).normal_(0, 0.0),
+                x + torch.FloatTensor(1, 1, 28, 28).to(device).normal_(0, 0.0),
                 0, 1
             )
 
@@ -172,9 +170,17 @@ def main():
     plt.xlabel('confidence rate')
     plt.ylabel('rate values')
     plt.plot(conf_x, acc_y, c='b', label='acc')
+    #plt.plot(conf_x, drop_y, c='r', label='drop rate')
+    plt.legend()
+    plt.show()
+
+    plt.figure(figsize=(10, 10))
+    plt.xlabel('confidence rate')
+    plt.ylabel('rate values')
     plt.plot(conf_x, drop_y, c='r', label='drop rate')
     plt.legend()
     plt.show()
+
 
 if __name__ == '__main__':
     main()
