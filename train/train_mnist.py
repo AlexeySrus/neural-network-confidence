@@ -35,7 +35,7 @@ def main():
     batch_size = config['train']['batch_size']
     n_jobs = config['train']['number_of_processes']
 
-    model = Model(ResNet18(), device)
+    model = Model(MNISTNet(), device)
 
     callbacks = []
 

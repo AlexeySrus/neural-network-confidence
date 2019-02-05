@@ -1,0 +1,25 @@
+visualization:
+  use_visdom: True
+  visdom_port: 9000
+  visdom_server: 'http://localhost'
+
+train:
+  lr: 0.001
+
+  batch_size: 128
+  number_of_processes: 4
+
+  save:
+    model: '../data/weights/mnist/ae/'
+    every: 10
+
+  load: True
+
+  base_model_weights: '../data/weights/mnist/model-70.trh'
+  ae_model_weights: '../data/weights/mnist/ae/model-40.trh'
+
+  image:
+    every: 10
+
+validation:
+  use_validation: True

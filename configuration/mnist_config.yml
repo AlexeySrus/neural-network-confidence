@@ -6,12 +6,12 @@ visualization:
 train:
   lr: 0.001
   
-  batch_size: 64
+  batch_size: 128
   number_of_processes: 4
 
   save:
     model: '../data/weights/mnist/'
-    every: 1
+    every: 10
 
   load: False
 

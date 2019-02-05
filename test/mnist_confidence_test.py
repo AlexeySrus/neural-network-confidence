@@ -8,28 +8,14 @@ from utils.loaders import load_mnist, get_loaders
 from utils.confidence_prediction import classification_with_confidence
 from sklearn.metrics import accuracy_score
 import yaml
+import numpy as np
 
-
-def rotate_tensor(tensor, angle):
-    """
-    Rotate 3D tensor
-    Args:
-        tensor: input 3D pytorch tensor
-        angle: string with rotation angel, mist be '90' or '180' or '270'
-
-    Returns:
-        Rotated tensor
-    """
-    assert angle in [90, 180, 270]
-
-    if angle == 90:
-        return tensor.transpose(1, 2).flip(2)
-
-    if angle == 180:
-        return tensor.flip(1, 2)
-
-    if angle == 270:
-        return tensor.transpose(1, 2).flip(1)
+import matplotlib
+try:
+    from matplotlib import pyplot as plt
+except:
+    matplotlib.use('TkAgg')
+    from matplotlib import pyplot as plt
 
 
 def parse_args():
@@ -69,90 +55,126 @@ def main():
     base_model.model.eval()
     ae_model.model.eval()
 
-    k = 1
-    y = []
-    y1 = []
-    y_by_ae = []
+    # k = 1
+    # y = []
+    # y1 = []
+    # y_by_ae = []
+    #
+    # for i in tqdm.tqdm(range(1000)):
+    #     x, y_true = val_loader[i]
+    #
+    #     x = torch.FloatTensor(x).to(device).unsqueeze(0)
+    #
+    #     x = torch.clamp(
+    #         x + torch.FloatTensor(1, 1, 28, 28).to(device).normal_(0, 0.0),
+    #         0, 1
+    #     )
+    #
+    #     #x = rotate_tensor(x.squeeze(0), angle[i % 3]).unsqueeze(0)
+    #
+    #     y_pred1, y_pred2, conf, x_gen = classification_with_confidence(
+    #         x,
+    #         base_model.model,
+    #         ae_model.model
+    #     )
+    #
+    #     y_pred1 = y_pred1.detach().to('cpu').numpy()
+    #     y_pred2 = y_pred2.detach().to('cpu').numpy()
+    #
+    #     if False and conf < args.confidence:
+    #         print(
+    #             'i:', k,
+    #             'y_true:', y_true.argmax(), 'y_pred1:',  y_pred1.argmax(),
+    #             'y_pred2:', y_pred2.argmax(), 'confidence:', conf,
+    #             'result:', conf > 0.8
+    #         )
+    #
+    #         draw.add_window(k)
+    #         draw.per_batch({
+    #             'y_true': x,
+    #             'y_pred': x_gen
+    #         }, k)
+    #
+    #         k += 1
+    #
+    #     y.append(y_true.argmax())
+    #     y1.append(y_pred1.argmax())
+    #     y_by_ae.append(
+    #         y_pred1.argmax() if conf > args.confidence else y_pred2.argmax()
+    #     )
+    #
+    # print('Default accuracy:', accuracy_score(y, y1))
+    # print('AE accuracy:', accuracy_score(y, y_by_ae))
+    #
+    # y = []
+    # y1 = []
+    #
+    # for i in tqdm.tqdm(range(10000)):
+    #     x, y_true = val_loader[i]
+    #
+    #     x = torch.FloatTensor(x).to(device).unsqueeze(0)
+    #
+    #     x = torch.clamp(
+    #         x + torch.FloatTensor(1, 1, 28, 28).to(device).normal_(0, 0.0),
+    #         0, 1
+    #     )
+    #
+    #     y_pred1, y_pred2, conf, x_gen = classification_with_confidence(
+    #         x,
+    #         base_model.model,
+    #         ae_model.model
+    #     )
+    #
+    #     y_pred1 = y_pred1.detach().to('cpu').numpy()
+    #
+    #     if conf > args.confidence:
+    #         y.append(y_true.argmax())
+    #         y1.append(y_pred1.argmax())
+    #
+    # print('Accuracy by confidence:', accuracy_score(y, y1))
 
-    angle = {
-        0: 90,
-        1: 180,
-        2: 270
-    }
+    N = 1000
 
-    for i in tqdm.tqdm(range(1000)):
-        x, y_true = val_loader[i]
+    conf_x = np.arange(0, 1, 0.05)[:-1]
+    acc_y = []
+    drop_y = []
 
-        x = torch.FloatTensor(x).to(device).unsqueeze(0)
+    for cx in tqdm.tqdm(conf_x):
+        y = []
+        y1 = []
 
-        x = torch.clamp(
-            x + torch.FloatTensor(1, 1, 28, 28).to(device).normal_(0, 0.0),
-            0, 1
-        )
+        for i in range(N):
+            x, y_true = val_loader[i]
 
-        #x = rotate_tensor(x.squeeze(0), angle[i % 3]).unsqueeze(0)
+            x = torch.FloatTensor(x).to(device).unsqueeze(0)
 
-        y_pred1, y_pred2, conf, x_gen = classification_with_confidence(
-            x,
-            base_model.model,
-            ae_model.model
-        )
-
-        y_pred1 = y_pred1.detach().to('cpu').numpy()
-        y_pred2 = y_pred2.detach().to('cpu').numpy()
-
-        if False and conf < args.confidence:
-            print(
-                'i:', k,
-                'y_true:', y_true.argmax(), 'y_pred1:',  y_pred1.argmax(),
-                'y_pred2:', y_pred2.argmax(), 'confidence:', conf,
-                'result:', conf > 0.8
+            x = torch.clamp(
+                x + torch.FloatTensor(1, 1, 72, 72).to(device).normal_(0, 0.0),
+                0, 1
             )
 
-            draw.add_window(k)
-            draw.per_batch({
-                'y_true': x,
-                'y_pred': x_gen
-            }, k)
+            y_pred1, y_pred2, conf, x_gen = classification_with_confidence(
+                x,
+                base_model.model,
+                ae_model.model
+            )
 
-            k += 1
+            y_pred1 = y_pred1.detach().to('cpu').numpy()
 
-        y.append(y_true.argmax())
-        y1.append(y_pred1.argmax())
-        y_by_ae.append(
-            y_pred1.argmax() if conf > args.confidence else y_pred2.argmax()
-        )
+            if conf > cx:
+                y.append(y_true.argmax())
+                y1.append(y_pred1.argmax())
 
-    print('Default accuracy:', accuracy_score(y, y1))
-    print('AE accuracy:', accuracy_score(y, y_by_ae))
+        acc_y.append(accuracy_score(y, y1))
+        drop_y.append((N - len(y)) / N)
 
-    y = []
-    y1 = []
-
-    for i in tqdm.tqdm(range(10000)):
-        x, y_true = val_loader[i]
-
-        x = torch.FloatTensor(x).to(device).unsqueeze(0)
-
-        x = torch.clamp(
-            x + torch.FloatTensor(1, 1, 28, 28).to(device).normal_(0, 0.0),
-            0, 1
-        )
-
-        y_pred1, y_pred2, conf, x_gen = classification_with_confidence(
-            x,
-            base_model.model,
-            ae_model.model
-        )
-
-        y_pred1 = y_pred1.detach().to('cpu').numpy()
-
-        if conf > args.confidence:
-            y.append(y_true.argmax())
-            y1.append(y_pred1.argmax())
-
-    print('Accuracy by confidence:', accuracy_score(y, y1))
-
+    plt.figure(figsize=(10, 10))
+    plt.xlabel('confidence rate')
+    plt.ylabel('rate values')
+    plt.plot(conf_x, acc_y, c='b', label='acc')
+    plt.plot(conf_x, drop_y, c='r', label='drop rate')
+    plt.legend()
+    plt.show()
 
 if __name__ == '__main__':
     main()
