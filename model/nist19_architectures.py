@@ -28,6 +28,47 @@ class NIST19Net(nn.Module):
         return F.softmax(x4, dim=1), feat
 
 
+class NIST19Net2(nn.Module):
+    def __init__(self, classes):
+        super(NIST19Net2, self).__init__()
+        self.conv1 = nn.Conv2d(1, 40, 10, 1)
+        self.conv2 = nn.Conv2d(40, 64, 5, 1)
+        self.conv3 = nn.Conv2d(64, 20, 5, 1)
+        self.fc1 = nn.Linear(20*25*25, 1500)
+        self.fc2 = nn.Linear(1500, 500)
+        self.fc3 = nn.Linear(500, classes)
+        self.dropout = nn.Dropout(0.4)
+        self.bn1 = nn.BatchNorm2d(1)
+        self.bn2 = nn.BatchNorm2d(40)
+        self.bn3 = nn.BatchNorm2d(64)
+
+    def forward(self, x):
+        x = self.bn1(x)
+        x = F.relu(self.conv1(x))
+        if self.training:
+            self.dropout(x)
+
+        x = self.bn2(x)
+        x = F.relu(self.conv2(x))
+        if self.training:
+            self.dropout(x)
+        x = F.max_pool2d(x, 2, 2)
+
+        x = self.bn3(x)
+        x = F.relu(self.conv3(x))
+        if self.training:
+            self.dropout(x)
+
+        x = x.view(-1, 20*25*25)
+        x = F.relu(self.fc1(x))
+        feat = x
+        if self.training:
+            self.dropout(x)
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        return F.softmax(x, dim=1)
+
+
 class ConfidenceAE(nn.Module):
     def __init__(self, basic_net):
         super(ConfidenceAE, self).__init__()

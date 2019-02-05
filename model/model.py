@@ -3,6 +3,7 @@ import tqdm
 import os
 import re
 from utils.losses import l2
+from utils.losses import acc as acc_f
 
 
 class Model:
@@ -36,6 +37,7 @@ class Model:
 
             batches_count = len(train_loader)
             avg_epoch_loss = 0
+            avg_epoch_acc = 0
 
             with tqdm.tqdm(total=batches_count) as pbar:
                 for i, (_x, _y_true) in enumerate(train_loader):
@@ -48,13 +50,19 @@ class Model:
                     loss.backward()
                     optimizer.step()
 
+                    acc = acc_f(y_pred, y_true)
+
                     pbar.postfix = \
-                        'Epoch: {}/{}, Loss: {:.8f}'.format(epoch,
-                                        epochs,
-                                        loss.item() / train_loader.batch_size
-                                    )
+                        'Epoch: {}/{}, loss: {:.8f}, acc: {:.8f}'.format(
+                            epoch,
+                            epochs,
+                            loss.item() / train_loader.batch_size,
+                            acc
+                        )
                     avg_epoch_loss += \
                         loss.item() / train_loader.batch_size / batches_count
+
+                    avg_epoch_acc += acc.detach().numpy() / batches_count
 
                     for cb in self.callbacks:
                         cb.per_batch({
@@ -63,15 +71,17 @@ class Model:
                             'n': (epoch - 1)*batches_count + i + 1,
                             'x': x,
                             'y_pred': y_pred,
-                            'y_true': y_true
+                            'y_true': y_true,
+                            'acc': acc.detach().numpy()
                         })
 
                     pbar.update(1)
 
             test_loss = None
+            test_acc = None
 
             if validation_loader is not None:
-                test_loss = self.evaluate(
+                test_loss, test_acc = self.evaluate(
                     validation_loader, loss_function, verbose
                 )
                 self.model.train()
@@ -82,7 +92,9 @@ class Model:
                     'loss': avg_epoch_loss,
                     'val loss': test_loss,
                     'n': epoch,
-                    'optimize_state': optimizer.state_dict()
+                    'optimize_state': optimizer.state_dict(),
+                    'acc': avg_epoch_acc,
+                    'val acc': test_acc
                 })
 
     def evaluate(self,
@@ -102,6 +114,7 @@ class Model:
         self.model.eval()
 
         test_loss = 0
+        test_acc = 0
 
         with torch.no_grad():
             set_range = tqdm.tqdm(test_loader) if verbose else test_loader
@@ -112,8 +125,10 @@ class Model:
                 test_loss += loss_function(
                     y_pred, y_true
                 ).item() / test_loader.batch_size / len(test_loader)
+                test_acc += \
+                    acc_f(y_pred, y_true).detach().numpy() / len(test_loader)
 
-        return test_loss
+        return test_loss, test_acc
 
     def predict(self,
                 predict_loader,

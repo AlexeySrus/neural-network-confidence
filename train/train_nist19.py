@@ -1,7 +1,7 @@
 import torch
 import argparse
 import os
-from model.nist19_architectures import NIST19Net
+from model.nist19_architectures import NIST19Net, NIST19Net2
 from model.model import Model, get_last_epoch_weights_path
 import torch.nn.functional as F
 from utils.callbacks import (SaveModelPerEpoch, VisPlot,
@@ -34,9 +34,10 @@ def main():
     batch_size = config['train']['batch_size']
     n_jobs = config['train']['number_of_processes']
 
-    loader = NIST19Loader(config['train']['data'])
+    train_loader = NIST19Loader(config['train']['data'], validation=False)
+    val_loader = NIST19Loader(config['train']['data'], validation=True)
 
-    model = Model(NIST19Net(loader.get_classes_count()), device)
+    model = Model(NIST19Net2(train_loader.get_classes_count()), device)
 
     callbacks = []
 
@@ -58,7 +59,7 @@ def main():
 
     if config['visualization']['use_visdom']:
         plots = VisPlot(
-            'MNIST classification model',
+            'NIST19 classification model',
             server=config['visualization']['visdom_server'],
             port=config['visualization']['visdom_port']
         )
@@ -68,6 +69,13 @@ def main():
                                    [
                                        'train binary cross entropy',
                                        'validation binary cross entropy'
+                                   ])
+
+        plots.register_scatterplot('train validation acc per_epoch', 'Epochs',
+                                   'acc',
+                                   [
+                                       'train acc',
+                                       'validation acc'
                                    ])
         callbacks.append(plots)
 
@@ -93,7 +101,11 @@ def main():
             optimizer.load_state_dict(torch.load(optim_path))
 
     train_dataset = DataLoader(
-        loader, batch_size=batch_size, num_workers=n_jobs
+        train_loader, batch_size=batch_size, num_workers=n_jobs
+    )
+
+    val_dataset = DataLoader(
+        val_loader, batch_size=batch_size, num_workers=n_jobs
     )
 
     model.fit(
@@ -102,7 +114,7 @@ def main():
         args.epochs,
         F.binary_cross_entropy,
         init_start_epoch=start_epoch,
-        validation_loader=None
+        validation_loader=val_dataset
     )
 
 

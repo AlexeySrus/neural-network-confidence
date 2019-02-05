@@ -103,25 +103,35 @@ class VisPlot(AbstractCallback):
                     self.update_scatterplot(
                         win,
                         args['n'],
-                        args['loss']
+                        args['loss'],
+                        args['acc']
                     )
 
                 if 'validation' in win:
                     self.update_scatterplot(
                         win,
                         args['n'],
-                        args['val loss']
+                        args['val loss'],
+                        args['val acc']
                     )
 
     def per_epoch(self, args, keyward='per_epoch'):
         for win in self.windows.keys():
             if keyward in win:
-                if 'train' in win and 'validation' in win:
+                if 'train' in win and 'validation' in win and 'acc' not in win:
                     self.update_scatterplot(
                         win,
                         args['n'],
                         args['loss'],
                         args['val loss']
+                    )
+
+                if 'train' in win and 'validation' in win and 'acc' in win:
+                    self.update_scatterplot(
+                        win,
+                        args['n'],
+                        args['acc'],
+                        args['val acc']
                     )
 
 
