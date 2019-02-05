@@ -9,9 +9,13 @@ from utils.confidence_prediction import classification_with_confidence
 from sklearn.metrics import accuracy_score
 import yaml
 import numpy as np
+
 import matplotlib
-matplotlib.use('TkAgg')
-from matplotlib import pyplot as plt
+try:
+    from matplotlib import pyplot as plt
+except:
+    matplotlib.use('TkAgg')
+    from matplotlib import pyplot as plt
 
 
 def parse_args():
@@ -39,6 +43,8 @@ def main():
         validation=True,
         use_crop=True
     )
+
+    print('Dataset size:', len(val_loader))
 
     base_model = Model(NIST19Net(val_loader.get_classes_count()), device)
     base_model.load(config['train']['base_model_weights'])
