@@ -136,7 +136,7 @@ def main():
     #
     # print('Drop elements rate:', (N - len(y)) / N)
 
-    conf_x = np.arange(0, 1, 0.1)[:-1]
+    conf_x = np.arange(0, 1, 0.05)[:-1]
     acc_y = []
     drop_y = []
 

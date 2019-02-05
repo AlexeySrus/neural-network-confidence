@@ -69,7 +69,10 @@ class NIST19Loader:
 
         classes_imgs_tuple = {
             c: self.flatten_list(
-                [[d + img_name for img_name in os.listdir(d)] for d in
+                [[
+                    d + img_name
+                    for img_name in os.listdir(d) if os.direxists(img_name)
+                ] for d in
                  drs_list])
             for c, drs_list in classes_dirs_tuple.items()
         }
