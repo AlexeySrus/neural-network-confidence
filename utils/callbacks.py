@@ -127,12 +127,13 @@ class VisPlot(AbstractCallback):
 
 class VisImageForAE(AbstractCallback):
     def __init__(self, title, server='https://localhost', port=8080,
-                 vis_step=1):
+                 vis_step=1, scale=10):
         self.viz = Visdom(server=server, port=port)
         self.title = title + ' original|predicted'
         self.windows = {1: None}
         self.n = 0
         self.step = vis_step
+        self.scale = scale
 
         random.seed()
 
@@ -148,8 +149,10 @@ class VisImageForAE(AbstractCallback):
                     )
 
                     self.windows[win] = self.viz.image(
-                        F.interpolate(x.unsqueeze(0),
-                                      scale_factor=(10, 10)).squeeze(),
+                        F.interpolate(
+                            x.unsqueeze(0),
+                            scale_factor=(self.scale, self.scale)
+                        ).squeeze(),
                         win=self.windows[win],
                         opts=dict(title=self.title)
                     )

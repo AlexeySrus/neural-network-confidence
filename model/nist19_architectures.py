@@ -25,7 +25,7 @@ class NIST19Net(nn.Module):
         x4 = F.relu(self.fc1(x3v))
         feat = x4
         x4 = self.fc2(x4)
-        return F.softmax(x4, dim=1)
+        return F.softmax(x4, dim=1), feat
 
 
 class ConfidenceAE(nn.Module):
@@ -38,12 +38,12 @@ class ConfidenceAE(nn.Module):
         for p in self.basic_net.parameters():
             p.requires_grad = False
 
-        self.fc1 = nn.Linear(500, 700)
-        self.fc2 = nn.Linear(700, 28*28)
+        self.fc1 = nn.Linear(500, 2500)
+        self.fc2 = nn.Linear(2500, 72*72)
 
     def forward(self, x):
         _, x1 = self.basic_net(x)
         x = F.relu(self.fc1(x1))
         x = torch.sigmoid(self.fc2(x))
-        x = x.view(-1, 1, 28, 28)
+        x = x.view(-1, 1, 72, 72)
         return x

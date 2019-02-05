@@ -38,17 +38,24 @@ class NIST19Loader:
                'e', 'f', 'g', 'h', 'i', 'p',
                'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y']
 
-    def __init__(self, path, shape=(72, 72), shuffled=True):
+    def __init__(self, path, shape=(72, 72), shuffled=True,
+                 validation=False, for_ae=False, use_crop=False):
         self.path = path
         self.shape = shape
+        self.ae = for_ae
+        self.crop = use_crop
 
         self.data = self.generate_paths()
 
+        if shuffled:
+            self.data = shuffle(self.data)
+
+        self.data = self.data[-len(self.data) // 4:] \
+            if validation else \
+            self.data[:-len(self.data) // 4]
+
         self.x = [d[1] for d in self.data]
         self.y = [d[0] for d in self.data]
-
-        if shuffled:
-            self.x, self.y = shuffle(self.x, self.y)
 
     def generate_imgs_tuple(self):
         supdirs = list(
@@ -87,10 +94,16 @@ class NIST19Loader:
             if idx < len(self.x):
                 return self[idx - 1]
             img = np.zeros(shape=self.shape)
+        else:
+            if self.crop:
+                img = self.get_actual_area(img)
 
         img = resize_image(img, self.shape)
         img = np.expand_dims(img, axis=0)
         img = img.astype('float32') / 255.0
+
+        if self.ae:
+            return img, img
         return img, self.one_hot_vector(self.y[idx])
 
     @staticmethod
@@ -100,6 +113,44 @@ class NIST19Loader:
             for e in l:
                 res.append(e)
         return res
+
+    @staticmethod
+    def get_actual_area(img, threshold=200):
+        x0, x1 = 0, 0
+        y0, y1 = 0, 0
+
+        for i in range(img.shape[0]):
+            for j in range(img.shape[1]):
+                if img[i, j] < 200:
+                    if y0 == 0:
+                        y0 = i
+                    y1 = i
+
+        for j in range(img.shape[1]):
+            for i in range(img.shape[0]):
+                if img[i, j] < threshold:
+                    if x0 == 0:
+                        x0 = j
+                    x1 = j
+
+        width = x1 - x0
+        height = y1 - y0
+
+        d = width - height
+
+        if d < 0:
+            x0 += d // 2
+            x1 -= d // 2
+        else:
+            y0 -= d // 2
+            y1 += d // 2
+
+        width = x1 - x0
+        height = y1 - y0
+
+        x1 -= width - height
+
+        return img[y0:y1 + 1, x0:x1 + 1]
 
     def one_hot_vector(self, label):
         res = [0] * len(self.classes)

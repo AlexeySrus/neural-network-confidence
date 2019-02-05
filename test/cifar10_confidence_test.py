@@ -10,28 +10,6 @@ from sklearn.metrics import accuracy_score
 import yaml
 
 
-def rotate_tensor(tensor, angle):
-    """
-    Rotate 3D tensor
-    Args:
-        tensor: input 3D pytorch tensor
-        angle: string with rotation angel, mist be '90' or '180' or '270'
-
-    Returns:
-        Rotated tensor
-    """
-    assert angle in [90, 180, 270]
-
-    if angle == 90:
-        return tensor.transpose(1, 2).flip(2)
-
-    if angle == 180:
-        return tensor.flip(1, 2)
-
-    if angle == 270:
-        return tensor.transpose(1, 2).flip(1)
-
-
 def parse_args():
     parser = argparse.ArgumentParser(description='AE test script')
     parser.add_argument('--config', required=True, type=str,
@@ -64,10 +42,10 @@ def main():
         1
     )
 
-    train_loader, val_loader = get_loaders(load_cifar10())
-
     base_model.model.eval()
     ae_model.model.eval()
+
+    train_loader, val_loader = get_loaders(load_cifar10())
 
     k = 1
     y = []
@@ -129,7 +107,7 @@ def main():
     y = []
     y1 = []
 
-    for i in tqdm.tqdm(range(len(val_loader))):
+    for i in tqdm.tqdm(range(100 + 0*len(val_loader))):
         x, y_true = val_loader[i]
 
         x = torch.FloatTensor(x).to(device).unsqueeze(0)

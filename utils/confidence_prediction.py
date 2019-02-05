@@ -17,11 +17,15 @@ def cross_entropy(predictions, targets, epsilon=1e-12):
     return ce
 
 
-def classification_with_confidence(x, basic_net, ae_net):
+def SoftmaxL1(predictions, targets):
+    return np.abs(predictions - targets).sum() / 2
+
+
+def classification_with_confidence(x, basic_net, ae_net, conf_f=SoftmaxL1):
     y1 = basic_net(x)[0]
     x_gen = ae_net(x)
     y2 = basic_net(x_gen)[0]
-    bn = np.abs(cross_entropy(
+    bn = np.abs(conf_f(
         y1.detach().to('cpu').numpy(),
         y2.detach().to('cpu').numpy()
     ))
