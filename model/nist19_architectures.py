@@ -4,8 +4,10 @@ import torch.nn.functional as F
 
 
 class NIST19Net(nn.Module):
-    def __init__(self, classes):
+    def __init__(self, classes, for_ae=False):
         super(NIST19Net, self).__init__()
+        self.ae = for_ae
+
         self.conv1 = nn.Conv2d(1, 20, 5, 1)
         self.conv2 = nn.Conv2d(20, 50, 5, 1)
         self.fc1 = nn.Linear(15*15*50, 500)
@@ -25,16 +27,21 @@ class NIST19Net(nn.Module):
         x4 = F.relu(self.fc1(x3v))
         feat = x4
         x4 = self.fc2(x4)
-        return F.softmax(x4, dim=1), feat
+
+        if self.ae:
+            return F.softmax(x4, dim=1), feat
+        return F.softmax(x4, dim=1)
 
 
 class NIST19Net2(nn.Module):
-    def __init__(self, classes):
+    def __init__(self, classes, for_ae=False):
         super(NIST19Net2, self).__init__()
-        self.conv1 = nn.Conv2d(1, 40, 10, 1)
+        self.ae = for_ae
+
+        self.conv1 = nn.Conv2d(1, 40, 5, 1)
         self.conv2 = nn.Conv2d(40, 64, 5, 1)
         self.conv3 = nn.Conv2d(64, 20, 5, 1)
-        self.fc1 = nn.Linear(20*25*25, 1500)
+        self.fc1 = nn.Linear(20*14*14, 1500)
         self.fc2 = nn.Linear(1500, 500)
         self.fc3 = nn.Linear(500, classes)
         self.dropout = nn.Dropout(0.4)
@@ -58,14 +65,18 @@ class NIST19Net2(nn.Module):
         x = F.relu(self.conv3(x))
         if self.training:
             self.dropout(x)
+        x = F.max_pool2d(x, 2, 2)
 
-        x = x.view(-1, 20*25*25)
+        x = x.view(-1, 20*14*14)
         x = F.relu(self.fc1(x))
         feat = x
         if self.training:
             self.dropout(x)
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
+
+        if self.ae:
+            return F.softmax(x, dim=1), feat
         return F.softmax(x, dim=1)
 
 

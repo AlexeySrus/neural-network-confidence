@@ -4,16 +4,16 @@ visualization:
   visdom_server: "http://localhost"
 
 train:
-  data: '../../HandwrittenCharacterGenerator/data/'
+  data: '../data/datasets/nist19/'
 
   lr: 0.001
 
-  batch_size: 64
+  batch_size: 256
   number_of_processes: 4
 
   save:
-    model: '../data/weights/nist19_2/'
-    every: 20
+    model: '../data/weights/nist19/'
+    every: 1
 
   load: False
 

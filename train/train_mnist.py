@@ -68,6 +68,14 @@ def main():
                                        'train binary cross entropy',
                                        'validation binary cross entropy'
                                    ])
+
+        plots.register_scatterplot('train validation acc per_epoch', 'Epochs',
+                                   'acc',
+                                   [
+                                       'train acc',
+                                       'validation acc'
+                                   ])
+
         callbacks.append(plots)
 
     model.set_callbacks(callbacks)
@@ -75,7 +83,9 @@ def main():
     start_epoch = 1
     optimizer = torch.optim.Adam(
         model.model.parameters(),
-        lr=config['train']['lr']
+        lr=config['train']['lr'],
+        weight_decay=0.1,
+        amsgrad=True
     )
 
     if config['train']['load']:

@@ -2,6 +2,7 @@ import torch
 import tqdm
 import os
 import re
+from torch.autograd import Variable
 from utils.losses import l2
 from utils.losses import acc as acc_f
 
@@ -46,6 +47,7 @@ class Model:
 
                     optimizer.zero_grad()
                     y_pred = self.model(x)
+
                     loss = loss_function(y_pred, y_true)
                     loss.backward()
                     optimizer.step()

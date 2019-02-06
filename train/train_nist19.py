@@ -84,7 +84,8 @@ def main():
     start_epoch = 1
     optimizer = torch.optim.Adam(
         model.model.parameters(),
-        lr=config['train']['lr']
+        lr=config['train']['lr'],
+        weight_decay=0.1
     )
 
     if config['train']['load']:

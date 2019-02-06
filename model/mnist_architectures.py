@@ -4,8 +4,10 @@ import torch.nn.functional as F
 
 
 class MNISTNet(nn.Module):
-    def __init__(self):
+    def __init__(self, for_ae=False):
         super(MNISTNet, self).__init__()
+        self.ae = for_ae
+
         self.conv1 = nn.Conv2d(1, 20, 5, 1)
         self.conv2 = nn.Conv2d(20, 50, 5, 1)
         self.fc1 = nn.Linear(4*4*50, 500)
@@ -25,7 +27,10 @@ class MNISTNet(nn.Module):
         x4 = F.relu(self.fc1(x3v))
         feat = x4
         x4 = self.fc2(x4)
-        return F.softmax(x4, dim=1), feat
+
+        if self.ae:
+            return F.softmax(x4, dim=1), feat
+        return F.softmax(x4, dim=1)
 
 
 class ConfidenceAE(nn.Module):
