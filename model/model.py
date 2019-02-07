@@ -2,9 +2,13 @@ import torch
 import tqdm
 import os
 import re
-from torch.autograd import Variable
 from utils.losses import l2
 from utils.losses import acc as acc_f
+
+
+def get_lr(optimizer):
+    for param_group in optimizer.param_groups:
+        return param_group['lr']
 
 
 class Model:
@@ -26,6 +30,7 @@ class Model:
         Args:
             train_loader: DataLoader
             optimizer: optimizer from torch.optim with initialized parameters
+            or tuple of (optimizer, scheduler)
             epochs: epochs count
             loss_function: Loss function
             validation_loader: DataLoader
@@ -33,12 +38,20 @@ class Model:
             init_start_epoch: start epochs number
         Returns:
         """
+        scheduler = None
+        if type(optimizer) is tuple:
+            scheduler = optimizer[1]
+            optimizer = optimizer[0]
+
         for epoch in range(init_start_epoch, epochs + 1):
             self.model.train()
 
             batches_count = len(train_loader)
             avg_epoch_loss = 0
             avg_epoch_acc = 0
+
+            if scheduler is not None:
+                scheduler.step(epoch)
 
             with tqdm.tqdm(total=batches_count) as pbar:
                 for i, (_x, _y_true) in enumerate(train_loader):
@@ -55,11 +68,12 @@ class Model:
                     acc = acc_f(y_pred, y_true)
 
                     pbar.postfix = \
-                        'Epoch: {}/{}, loss: {:.8f}, acc: {:.8f}'.format(
+                        'Epoch: {}/{}, loss: {:.8f}, acc: {:.8f}, lr: {:.8f}'.format(
                             epoch,
                             epochs,
                             loss.item() / train_loader.batch_size,
-                            acc
+                            acc,
+                            get_lr(optimizer)
                         )
                     avg_epoch_loss += \
                         loss.item() / train_loader.batch_size / batches_count

@@ -2,7 +2,6 @@ import torch
 import argparse
 import os
 from model.mnist_architectures import MNISTNet
-from model.cifar10_resnet import ResNet18
 from model.model import Model, get_last_epoch_weights_path
 import torch.nn.functional as F
 from utils.callbacks import (SaveModelPerEpoch, VisPlot,
@@ -84,8 +83,13 @@ def main():
     optimizer = torch.optim.Adam(
         model.model.parameters(),
         lr=config['train']['lr'],
-        weight_decay=0.1,
+        weight_decay=1E-4,
         amsgrad=True
+    )
+    scheduler = torch.optim.lr_scheduler.StepLR(
+        optimizer,
+        args.epochs // 50,
+        gamma=0.5
     )
 
     if config['train']['load']:
@@ -113,7 +117,7 @@ def main():
 
     model.fit(
         train_dataset,
-        optimizer,
+        (optimizer, scheduler),
         args.epochs,
         F.binary_cross_entropy,
         init_start_epoch=start_epoch,

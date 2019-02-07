@@ -6,7 +6,7 @@ visualization:
 train:
   data: '../data/datasets/nist19/'
 
-  lr: 0.001
+  lr: 0.01
 
   batch_size: 256
   number_of_processes: 4

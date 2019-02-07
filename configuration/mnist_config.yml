@@ -4,7 +4,7 @@ visualization:
   visdom_server: "http://localhost"
 
 train:
-  lr: 0.001
+  lr: 0.01
   
   batch_size: 128
   number_of_processes: 4

@@ -85,7 +85,12 @@ def main():
     optimizer = torch.optim.Adam(
         model.model.parameters(),
         lr=config['train']['lr'],
-        weight_decay=0.1
+        weight_decay=1E-4
+    )
+    scheduler = torch.optim.lr_scheduler.StepLR(
+        optimizer,
+        args.epochs // 50,
+        gamma=0.5
     )
 
     if config['train']['load']:
@@ -111,7 +116,7 @@ def main():
 
     model.fit(
         train_dataset,
-        optimizer,
+        (optimizer, scheduler),
         args.epochs,
         F.binary_cross_entropy,
         init_start_epoch=start_epoch,
