@@ -96,15 +96,34 @@ class ConfidenceAE(nn.Module):
         self.deconv2 = nn.ConvTranspose2d(10, 5, 5)
         self.deconv3 = nn.ConvTranspose2d(5, 3, 7)
         self.conv2 = nn.Conv2d(3, 1, 1)
+        self.dropout = nn.Dropout(0.4)
+        self.bn1 = nn.BatchNorm2d(1)
+        self.bn2 = nn.BatchNorm2d(20)
+        self.bn3 = nn.BatchNorm2d(10)
+        self.bn4 = nn.BatchNorm2d(5)
 
     def forward(self, x):
-        _, x1 = self.basic_net(x)
-        x = F.relu(self.fc1(x1))
+        _, x = self.basic_net(x)
+
+        x = F.relu(self.fc1(x))
         x = x.view(-1, 1, 25, 25)
+
+        x = self.bn1(x)
         x = F.relu(self.conv1(x))
+        if self.training:
+            self.dropout(x)
+
+        x = self.bn2(x)
         x = F.relu(self.deconv1(x))
+        if self.training:
+            self.dropout(x)
+
+        x = self.bn3(x)
         x = F.relu(self.deconv2(x))
         x = F.interpolate(x, scale_factor=(2, 2))
+
+        x = self.bn4(x)
         x = F.relu(self.deconv3(x))
+
         x = torch.sigmoid(self.conv2(x))
         return x

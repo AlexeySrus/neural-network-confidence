@@ -97,6 +97,11 @@ def main():
         model.model.parameters(),
         lr=config['train']['lr']
     )
+    scheduler = torch.optim.lr_scheduler.StepLR(
+        optimizer,
+        20,
+        gamma=0.5
+    )
 
     if config['train']['load']:
         weight_path, optim_path, start_epoch = get_last_epoch_weights_path(
@@ -121,9 +126,9 @@ def main():
 
     model.fit(
         train_dataset,
-        optimizer,
+        (optimizer, scheduler),
         args.epochs,
-        F.mse_loss,
+        F.binary_cross_entropy,
         init_start_epoch=start_epoch,
         validation_loader=val_dataset
     )
