@@ -123,7 +123,7 @@ def main():
         train_dataset,
         optimizer,
         args.epochs,
-        F.binary_cross_entropy,
+        F.mse_loss,
         init_start_epoch=start_epoch,
         validation_loader=val_dataset
     )

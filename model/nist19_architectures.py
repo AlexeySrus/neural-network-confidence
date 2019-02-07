@@ -69,10 +69,10 @@ class NIST19Net2(nn.Module):
 
         x = x.view(-1, 20*14*14)
         x = F.relu(self.fc1(x))
-        feat = x
         if self.training:
             self.dropout(x)
         x = F.relu(self.fc2(x))
+        feat = x
         x = self.fc3(x)
 
         if self.ae:
@@ -90,12 +90,21 @@ class ConfidenceAE(nn.Module):
         for p in self.basic_net.parameters():
             p.requires_grad = False
 
-        self.fc1 = nn.Linear(1500, 2500)
-        self.fc2 = nn.Linear(2500, 72*72)
+        self.fc1 = nn.Linear(500, 625)
+        self.conv1 = nn.Conv2d(1, 20, 5, padding=2)
+        self.deconv1 = nn.ConvTranspose2d(20, 10, 5)
+        self.deconv2 = nn.ConvTranspose2d(10, 5, 5)
+        self.deconv3 = nn.ConvTranspose2d(5, 3, 7)
+        self.conv2 = nn.Conv2d(3, 1, 1)
 
     def forward(self, x):
         _, x1 = self.basic_net(x)
         x = F.relu(self.fc1(x1))
-        x = torch.sigmoid(self.fc2(x))
-        x = x.view(-1, 1, 72, 72)
+        x = x.view(-1, 1, 25, 25)
+        x = F.relu(self.conv1(x))
+        x = F.relu(self.deconv1(x))
+        x = F.relu(self.deconv2(x))
+        x = F.interpolate(x, scale_factor=(2, 2))
+        x = F.relu(self.deconv3(x))
+        x = torch.sigmoid(self.conv2(x))
         return x
