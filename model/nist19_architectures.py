@@ -90,7 +90,7 @@ class ConfidenceAE(nn.Module):
         for p in self.basic_net.parameters():
             p.requires_grad = False
 
-        self.fc1 = nn.Linear(500, 2500)
+        self.fc1 = nn.Linear(1500, 2500)
         self.fc2 = nn.Linear(2500, 72*72)
 
     def forward(self, x):

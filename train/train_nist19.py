@@ -89,7 +89,7 @@ def main():
     )
     scheduler = torch.optim.lr_scheduler.StepLR(
         optimizer,
-        args.epochs // 50,
+        2,
         gamma=0.5
     )
 

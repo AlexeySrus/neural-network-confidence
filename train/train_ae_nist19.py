@@ -1,7 +1,7 @@
 import torch
 import argparse
 import os
-from model.nist19_architectures import NIST19Net, ConfidenceAE
+from model.nist19_architectures import NIST19Net, NIST19Net2, ConfidenceAE
 from model.model import Model, get_last_epoch_weights_path
 import torch.nn.functional as F
 from utils.callbacks import (SaveModelPerEpoch, VisPlot,
@@ -39,7 +39,10 @@ def main():
     val_loader = NIST19Loader(config['train']['data'], validation=True,
                               for_ae=True)
 
-    base_model = Model(NIST19Net(train_loader.get_classes_count()), device)
+    base_model = Model(
+        NIST19Net2(train_loader.get_classes_count(), True),
+        device
+    )
     base_model.load(config['train']['base_model_weights'])
 
     model = Model(ConfidenceAE(base_model.model), device)
@@ -120,7 +123,7 @@ def main():
         train_dataset,
         optimizer,
         args.epochs,
-        F.mse_loss,
+        F.binary_cross_entropy,
         init_start_epoch=start_epoch,
         validation_loader=val_dataset
     )
