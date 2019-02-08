@@ -1,7 +1,7 @@
 import torch
 import argparse
 import tqdm
-from model.nist19_architectures import NIST19Net, ConfidenceAE
+from model.nist19_architectures import NIST19Net, NIST19Net2, ConfidenceAE
 from model.model import Model
 from utils.callbacks import VisImageForAE
 from utils.loaders import NIST19Loader
@@ -11,11 +11,8 @@ import yaml
 import numpy as np
 
 import matplotlib
-try:
-    from matplotlib import pyplot as plt
-except:
-    matplotlib.use('TkAgg')
-    from matplotlib import pyplot as plt
+matplotlib.use('TkAgg')
+from matplotlib import pyplot as plt
 
 
 def parse_args():
@@ -41,12 +38,12 @@ def main():
     val_loader = NIST19Loader(
         config['train']['data'],
         validation=True,
-        use_crop=True
+        use_crop=False
     )
 
     print('Dataset size:', len(val_loader))
 
-    base_model = Model(NIST19Net(val_loader.get_classes_count()), device)
+    base_model = Model(NIST19Net2(val_loader.get_classes_count(), True), device)
     base_model.load(config['train']['base_model_weights'])
     ae_model = Model(ConfidenceAE(base_model.model), device)
     ae_model.load(config['train']['ae_model_weights'])
@@ -62,7 +59,7 @@ def main():
     base_model.model.eval()
     ae_model.model.eval()
 
-    N = 1000
+    N = 100
     # k = 1
     # y = []
     # y1 = []

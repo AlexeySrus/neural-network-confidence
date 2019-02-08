@@ -15,10 +15,10 @@ train:
     model: '../data/weights/nist19_2/ae/'
     every: 10
 
-  load: True
+  load: False
 
   base_model_weights: '../data/weights/nist19_2/model-3.trh'
-  ae_model_weights: '../data/weights/nist19_2/ae/model-180.trh'
+  ae_model_weights: '../data/weights/nist19_2/ae/model-60.trh'
 
   image:
     every: 10
