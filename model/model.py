@@ -200,7 +200,7 @@ def get_last_epoch_weights_path(checkpoints_dir, log=None):
     """
     if not os.path.isdir(checkpoints_dir):
         os.makedirs(checkpoints_dir)
-        return None, None, 1
+        return None, None, 0
 
     weights_files_list = [
         matching_f.group()
@@ -211,7 +211,7 @@ def get_last_epoch_weights_path(checkpoints_dir, log=None):
     ]
 
     if len(weights_files_list) == 0:
-        return None, None, 1
+        return None, None, 0
 
     weights_files_list.sort(key=lambda x: -int(x.split('-')[1].split('.')[0]))
 

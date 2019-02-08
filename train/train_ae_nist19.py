@@ -92,14 +92,14 @@ def main():
 
     model.set_callbacks(callbacks)
 
-    start_epoch = 1
+    start_epoch = 0
     optimizer = torch.optim.Adam(
         model.model.parameters(),
         lr=config['train']['lr']
     )
     scheduler = torch.optim.lr_scheduler.StepLR(
         optimizer,
-        2,
+        10,
         gamma=0.5
     )
 

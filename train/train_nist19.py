@@ -81,7 +81,7 @@ def main():
 
     model.set_callbacks(callbacks)
 
-    start_epoch = 1
+    start_epoch = 0
     optimizer = torch.optim.Adam(
         model.model.parameters(),
         lr=config['train']['lr'],
