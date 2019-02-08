@@ -127,3 +127,26 @@ class ConfidenceAE(nn.Module):
 
         x = torch.sigmoid(self.conv2(x))
         return x
+
+
+class ConfidenceAE2(nn.Module):
+    def __init__(self, basic_net):
+        super(ConfidenceAE2, self).__init__()
+
+        self.basic_net = basic_net
+        self.basic_net.eval()
+
+        for p in self.basic_net.parameters():
+            p.requires_grad = False
+
+        self.fc1 = nn.Linear(500, 1500)
+        self.fc2 = nn.Linear(1500, 72*72)
+
+    def forward(self, x):
+        _, x = self.basic_net(x)
+
+        x = F.relu(self.fc1(x))
+        x = torch.sigmoid(self.fc2(x))
+        x = x.view(-1, 1, 72, 72)
+
+        return x

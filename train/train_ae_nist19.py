@@ -1,7 +1,7 @@
 import torch
 import argparse
 import os
-from model.nist19_architectures import NIST19Net, NIST19Net2, ConfidenceAE
+from model.nist19_architectures import NIST19Net2, ConfidenceAE2
 from model.model import Model, get_last_epoch_weights_path
 import torch.nn.functional as F
 from utils.callbacks import (SaveModelPerEpoch, VisPlot,
@@ -45,7 +45,7 @@ def main():
     )
     base_model.load(config['train']['base_model_weights'])
 
-    model = Model(ConfidenceAE(base_model.model), device)
+    model = Model(ConfidenceAE2(base_model.model), device)
 
     callbacks = []
 
@@ -99,7 +99,7 @@ def main():
     )
     scheduler = torch.optim.lr_scheduler.StepLR(
         optimizer,
-        20,
+        2,
         gamma=0.5
     )
 
