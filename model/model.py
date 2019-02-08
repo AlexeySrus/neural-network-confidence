@@ -4,6 +4,7 @@ import os
 import re
 from utils.losses import l2
 from utils.losses import acc as acc_f
+from utils.tensor_procesing import flatten
 
 
 def get_lr(optimizer):
@@ -65,7 +66,10 @@ class Model:
                     loss.backward()
                     optimizer.step()
 
-                    acc = acc_f(y_pred, y_true)
+                    acc = acc_f(
+                        flatten(y_pred),
+                        flatten(y_true)
+                    )
 
                     pbar.postfix = \
                         'Epoch: {}/{}, loss: {:.8f}, acc: {:.8f}, lr: {:.8f}'.format(

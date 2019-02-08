@@ -6,16 +6,16 @@ visualization:
 train:
   data: '../data/datasets/nist19/'
 
-  lr: 0.001
+  lr: 0.002
 
-  batch_size: 128
-  number_of_processes: 4
+  batch_size: 256
+  number_of_processes: 6
 
   save:
     model: '../data/weights/nist19_2/ae_2/'
-    every: 10
+    every: 1
 
-  load: False
+  load: True
 
   base_model_weights: '../data/weights/nist19_2/model-3.trh'
   ae_model_weights: '../data/weights/nist19_2/ae/model-60.trh'

@@ -13,7 +13,7 @@ import yaml
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='CIFAR10 AE train script')
+    parser = argparse.ArgumentParser(description='NIST19 AE train script')
     parser.add_argument('--config', required=True, type=str,
                         help='Path to configuration yml file.')
     parser.add_argument('--epochs', type=int, default=1, metavar='N',
