@@ -118,7 +118,7 @@ def main():
         optimizer,
         args.epochs,
         F.binary_cross_entropy,
-        init_start_epoch=start_epoch,
+        init_start_epoch=start_epoch + 1,
         validation_loader=val_dataset
     )
 
