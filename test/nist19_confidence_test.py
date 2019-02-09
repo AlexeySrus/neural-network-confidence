@@ -1,7 +1,7 @@
 import torch
 import argparse
 import tqdm
-from model.nist19_architectures import NIST19Net, NIST19Net2, ConfidenceAE
+from model.nist19_architectures import NIST19Net2, ConfidenceAE2
 from model.model import Model
 from utils.callbacks import VisImageForAE
 from utils.loaders import NIST19Loader
@@ -45,7 +45,7 @@ def main():
 
     base_model = Model(NIST19Net2(val_loader.get_classes_count(), True), device)
     base_model.load(config['train']['base_model_weights'])
-    ae_model = Model(ConfidenceAE(base_model.model), device)
+    ae_model = Model(ConfidenceAE2(base_model.model), device)
     ae_model.load(config['train']['ae_model_weights'])
 
     draw = VisImageForAE(
