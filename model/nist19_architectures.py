@@ -140,13 +140,18 @@ class ConfidenceAE2(nn.Module):
             p.requires_grad = False
 
         self.fc1 = nn.Linear(500, 1500)
-        self.fc2 = nn.Linear(1500, 72*72)
+        self.fc2 = nn.Linear(1500, 2500)
+        self.fc3 = nn.Linear(2500, 72*72)
+        self.dropout = nn.Dropout(0.2)
 
     def forward(self, x):
         _, x = self.basic_net(x)
 
         x = F.relu(self.fc1(x))
-        x = torch.sigmoid(self.fc2(x))
+        if self.training:
+            self.dropout(x)
+        x = F.relu(self.fc2(x))
+        x = torch.sigmoid(self.fc3(x))
         x = x.view(-1, 1, 72, 72)
 
         return x

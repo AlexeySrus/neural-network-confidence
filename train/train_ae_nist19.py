@@ -67,7 +67,7 @@ def main():
 
     if config['visualization']['use_visdom']:
         plots = VisPlot(
-            'CIFAR10 classification model',
+            'NIST19 AE model',
             server=config['visualization']['visdom_server'],
             port=config['visualization']['visdom_port']
         )
