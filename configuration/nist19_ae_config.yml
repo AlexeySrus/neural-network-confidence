@@ -12,10 +12,10 @@ train:
   number_of_processes: 4
 
   save:
-    model: '../data/weights/nist19_2/ae_2/'
+    model: '../data/weights/nist19_2/ae_3/'
     every: 10
 
-  load: True
+  load: False
 
   base_model_weights: '../data/weights/nist19_2/model-3.trh'
   ae_model_weights: '../data/weights/nist19_2/ae_2/model-60.trh'

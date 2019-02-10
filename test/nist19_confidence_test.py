@@ -59,7 +59,7 @@ def main():
     base_model.model.eval()
     ae_model.model.eval()
 
-    N = 1000
+    N = 10000
     # k = 1
     # y = []
     # y1 = []

@@ -55,14 +55,15 @@ class Model:
                 scheduler.step(epoch)
 
             with tqdm.tqdm(total=batches_count) as pbar:
-                for i, (_x, _y_true) in enumerate(train_loader):
+                for i, (_x, _y_true, _label) in enumerate(train_loader):
                     x = _x.to(self.device)
                     y_true = _y_true.to(self.device)
-
+                    label = _label.to(self.device)
                     optimizer.zero_grad()
-                    y_pred = self.model(x)
+                    label_pred, y_pred = self.model(x)
 
-                    loss = loss_function(y_pred, y_true)
+                    loss = loss_function(y_pred, y_true) +\
+                           loss_function(label_pred, label)
                     loss.backward()
                     optimizer.step()
 

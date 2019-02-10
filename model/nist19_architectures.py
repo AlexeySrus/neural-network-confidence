@@ -154,4 +154,6 @@ class ConfidenceAE2(nn.Module):
         x = torch.sigmoid(self.fc3(x))
         x = x.view(-1, 1, 72, 72)
 
-        return x
+        label, _ = self.basic_net(x)
+
+        return label, x

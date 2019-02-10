@@ -103,7 +103,7 @@ class NIST19Loader:
         img = img.astype('float32') / 255.0
 
         if self.ae:
-            return img, img
+            return img, img, self.one_hot_vector(self.y[idx])
         return img, self.one_hot_vector(self.y[idx])
 
     @staticmethod
