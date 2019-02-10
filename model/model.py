@@ -139,15 +139,17 @@ class Model:
 
         with torch.no_grad():
             set_range = tqdm.tqdm(test_loader) if verbose else test_loader
-            for _x, _y_true in set_range:
+            for _x, _y_true, _label in set_range:
                 x = _x.to(self.device)
                 y_true = _y_true.to(self.device)
-                y_pred = self.model(x)
-                test_loss += loss_function(
+                label = _label.to(self.device)
+                label_pred, y_pred = self.model(x)
+                test_loss += (loss_function(
                     y_pred, y_true
-                ).item() / test_loader.batch_size / len(test_loader)
+                ).item() + loss_function(label_pred, label).item())\
+                             / test_loader.batch_size / len(test_loader)
                 test_acc += \
-                    acc_f(y_pred, y_true).detach().numpy() / len(test_loader)
+                    acc_f(label_pred, label).detach().numpy() / len(test_loader)
 
         return test_loss, test_acc
 
