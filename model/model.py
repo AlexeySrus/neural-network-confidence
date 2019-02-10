@@ -68,8 +68,8 @@ class Model:
                     optimizer.step()
 
                     acc = acc_f(
-                        flatten(y_pred),
-                        flatten(y_true)
+                        flatten(label_pred),
+                        flatten(label)
                     )
 
                     pbar.postfix = \
