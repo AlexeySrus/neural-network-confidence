@@ -1,6 +1,7 @@
 import torch
 import argparse
 import os
+import numpy as np
 from model.nist19_architectures import NIST19Net, NIST19Net2
 from model.model import Model, get_last_epoch_weights_path
 import torch.nn.functional as F
@@ -34,8 +35,12 @@ def main():
     batch_size = config['train']['batch_size']
     n_jobs = config['train']['number_of_processes']
 
-    train_loader = NIST19Loader(config['train']['data'], validation=False)
-    val_loader = NIST19Loader(config['train']['data'], validation=True)
+    permutation = np.load(config['train']['permutation'])
+
+    train_loader = NIST19Loader(config['train']['data'], validation=False,
+                                permutation=permutation)
+    val_loader = NIST19Loader(config['train']['data'], validation=True,
+                              permutation=permutation)
 
     model = Model(NIST19Net2(train_loader.get_classes_count()), device)
 

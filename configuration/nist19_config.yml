@@ -5,6 +5,7 @@ visualization:
 
 train:
   data: '../data/datasets/nist19/'
+  permutation: '../data/datasets/nist19/nist19_permutation.npy'
 
   lr: 0.001
 

@@ -39,20 +39,31 @@ class NIST19Loader:
                'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y']
 
     def __init__(self, path, shape=(72, 72), shuffled=True,
-                 validation=False, for_ae=False, use_crop=False):
+                 validation=False, for_ae=False, use_crop=False,
+                 permutation=None):
         self.path = path
         self.shape = shape
         self.ae = for_ae
         self.crop = use_crop
+        self.permutation = permutation
 
         self.data = self.generate_paths()
 
-        if shuffled:
-            self.data = shuffle(self.data)
+        if self.permutation is not None:
+            assert len(self.permutation) == len(self.data)
 
-        self.data = self.data[-len(self.data) // 4:] \
-            if validation else \
-            self.data[:-len(self.data) // 4]
+        if shuffled:
+            if permutation is None:
+                self.data = shuffle(self.data)
+
+        if self.permutation is None:
+            self.data = self.data[-len(self.data) // 4:] \
+                if validation else \
+                self.data[:-len(self.data) // 4]
+        else:
+            self.permutation = self.permutation[-len(self.data) // 4:] \
+                if validation else \
+                self.permutation[:-len(self.data) // 4]
 
         self.x = [d[1] for d in self.data]
         self.y = [d[0] for d in self.data]
@@ -88,6 +99,9 @@ class NIST19Loader:
         return len(self.x)
 
     def __getitem__(self, idx):
+        if self.permutation is not None:
+            idx = self.permutation[idx]
+
         img = cv2.imread(self.x[idx], 0)
 
         if img is None:
