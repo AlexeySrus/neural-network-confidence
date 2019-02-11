@@ -36,7 +36,7 @@ def main():
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
 
-    base_model = Model(MNISTNet(), device)
+    base_model = Model(MNISTNet(for_ae=True), device)
     base_model.load(config['train']['base_model_weights'])
     ae_model = Model(ConfidenceAE(base_model.model), device)
     ae_model.load(config['train']['ae_model_weights'])
@@ -133,13 +133,15 @@ def main():
 
     N = 5000
 
-    conf_x = np.arange(0, 1, 0.05)[:-1]
+    conf_x = np.concatenate((np.arange(0, 1, 0.05), [0.9999999]))
     acc_y = []
     drop_y = []
+    drop_useful_y = []
 
     for cx in tqdm.tqdm(conf_x):
         y = []
         y1 = []
+        du_y = 0
 
         for i in range(N):
             x, y_true = val_loader[i]
@@ -162,22 +164,25 @@ def main():
             if conf > cx:
                 y.append(y_true.argmax())
                 y1.append(y_pred1.argmax())
+            else:
+                if y_true.argmax() == y_pred1.argmax():
+                    du_y += 1
 
         acc_y.append(accuracy_score(y, y1))
         drop_y.append((N - len(y)) / N)
+        drop_useful_y.append(du_y / N)
 
     plt.figure(figsize=(10, 10))
     plt.xlabel('confidence rate')
     plt.ylabel('rate values')
     plt.plot(conf_x, acc_y, c='b', label='acc')
-    #plt.plot(conf_x, drop_y, c='r', label='drop rate')
     plt.legend()
-    plt.show()
 
     plt.figure(figsize=(10, 10))
     plt.xlabel('confidence rate')
     plt.ylabel('rate values')
     plt.plot(conf_x, drop_y, c='r', label='drop rate')
+    plt.plot(conf_x, drop_useful_y, c='g', label='drop useful rate')
     plt.legend()
     plt.show()
 
