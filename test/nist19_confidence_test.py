@@ -59,7 +59,7 @@ def main():
     base_model.model.eval()
     ae_model.model.eval()
 
-    N = 10000
+    N = 1000
     # k = 1
     # y = []
     # y1 = []
@@ -139,7 +139,7 @@ def main():
     #
     # print('Drop elements rate:', (N - len(y)) / N)
 
-    conf_x = np.concatenate((np.arange(0, 1, 0.01)[:-1], [0.9999999]))
+    conf_x = np.concatenate((np.arange(0, 1, 0.05), [0.9999999]))
     print(conf_x)
     acc_y = []
     drop_y = []
@@ -189,11 +189,6 @@ def main():
     plt.xlabel('confidence rate')
     plt.ylabel('rate values')
     plt.plot(conf_x, drop_y, c='r', label='drop rate')
-    plt.legend()
-
-    plt.figure(figsize=(10, 10))
-    plt.xlabel('confidence rate')
-    plt.ylabel('rate values')
     plt.plot(conf_x, drop_useful_y, c='g', label='drop useful rate')
     plt.legend()
     plt.show()
