@@ -10,7 +10,7 @@ train:
   number_of_processes: 4
 
   save:
-    model: '../data/weights/mnist/ae/'
+    model: '../data/weights/mnist/ae_2/'
     every: 10
 
   load: True

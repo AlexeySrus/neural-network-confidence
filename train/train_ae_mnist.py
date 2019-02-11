@@ -8,7 +8,7 @@ from utils.callbacks import (SaveModelPerEpoch, VisPlot,
                                       SaveOptimizerPerEpoch,
                                         VisImageForAE)
 from torch.utils.data import DataLoader
-from utils.loaders import load_mnist_for_ae, get_loaders
+from utils.loaders import load_mnist, get_loaders
 import yaml
 
 
@@ -35,7 +35,7 @@ def main():
     batch_size = config['train']['batch_size']
     n_jobs = config['train']['number_of_processes']
 
-    base_model = Model(MNISTNet(), device)
+    base_model = Model(MNISTNet(for_ae=True), device)
     base_model.load(config['train']['base_model_weights'])
 
     model = Model(ConfidenceAE(base_model.model), device)
@@ -71,6 +71,14 @@ def main():
                                        'train binary cross entropy',
                                        'validation binary cross entropy'
                                    ])
+
+        plots.register_scatterplot('train validation acc per_epoch', 'Epochs',
+                                   'acc',
+                                   [
+                                       'train acc',
+                                       'validation acc'
+                                   ])
+
         callbacks.append(plots)
 
         callbacks.append(
@@ -89,6 +97,11 @@ def main():
         model.model.parameters(),
         lr=config['train']['lr']
     )
+    scheduler = torch.optim.lr_scheduler.StepLR(
+        optimizer,
+        10,
+        gamma=0.5
+    )
 
     if config['train']['load']:
         weight_path, optim_path, start_epoch = get_last_epoch_weights_path(
@@ -103,7 +116,7 @@ def main():
             model.load(weight_path)
             optimizer.load_state_dict(torch.load(optim_path))
 
-    train_loader, val_loader = get_loaders(load_mnist_for_ae())
+    train_loader, val_loader = get_loaders(load_mnist(), for_ae=True)
 
     train_dataset = DataLoader(
         train_loader, batch_size=batch_size, num_workers=n_jobs
@@ -115,7 +128,7 @@ def main():
 
     model.fit(
         train_dataset,
-        optimizer,
+        (optimizer, scheduler),
         args.epochs,
         F.binary_cross_entropy,
         init_start_epoch=start_epoch + 1,

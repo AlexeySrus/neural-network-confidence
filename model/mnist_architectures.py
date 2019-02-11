@@ -47,8 +47,11 @@ class ConfidenceAE(nn.Module):
         self.fc2 = nn.Linear(700, 28*28)
 
     def forward(self, x):
-        _, x1 = self.basic_net(x)
-        x = F.relu(self.fc1(x1))
+        _, x = self.basic_net(x)
+        x = F.relu(self.fc1(x))
         x = torch.sigmoid(self.fc2(x))
         x = x.view(-1, 1, 28, 28)
-        return x
+
+        label, _ = self.basic_net(x)
+
+        return label, x

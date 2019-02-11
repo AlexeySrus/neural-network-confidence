@@ -7,9 +7,10 @@ from utils.preprocessing import resize_image
 
 
 class Loader:
-    def __init__(self, x, y):
+    def __init__(self, x, y, for_ae=False):
         self.x = x
         self.y = y
+        self.ae = for_ae
 
     def shuffle(self):
         self.x, self.y = shuffle(self.x, self.y)
@@ -18,6 +19,8 @@ class Loader:
         return len(self.x)
 
     def __getitem__(self, idx):
+        if self.ae:
+            return self.x[idx], self.x[idx], self.y[idx]
         return self.x[idx], self.y[idx]
 
 
@@ -218,6 +221,6 @@ def load_cifar10_for_ae():
     return x_train, x_train, x_test, x_test
 
 
-def get_loaders(load_data):
+def get_loaders(load_data, for_ae=False):
     x_train, y_train, x_test, y_test = load_data
-    return Loader(x_train, y_train), Loader(x_test, y_test)
+    return Loader(x_train, y_train, for_ae), Loader(x_test, y_test, for_ae)

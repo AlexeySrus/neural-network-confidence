@@ -78,6 +78,14 @@ def main():
                                        'train binary cross entropy',
                                        'validation binary cross entropy'
                                    ])
+
+        plots.register_scatterplot('train validation acc per_epoch', 'Epochs',
+                                   'acc',
+                                   [
+                                       'train acc',
+                                       'validation acc'
+                                   ])
+
         callbacks.append(plots)
 
         callbacks.append(
