@@ -3,7 +3,7 @@ import tqdm
 import os
 import re
 from utils.losses import l2
-from utils.losses import acc as acc_f
+from utils.losses import acc as acc_function
 from utils.tensor_procesing import flatten
 
 
@@ -25,7 +25,8 @@ class Model:
             loss_function=l2,
             validation_loader=None,
             verbose=False,
-            init_start_epoch=1):
+            init_start_epoch=1,
+            acc_f=acc_function):
         """
         Model train method
         Args:
@@ -120,7 +121,8 @@ class Model:
     def evaluate(self,
                  test_loader,
                  loss_function=l2,
-                 verbose=False):
+                 verbose=False,
+                 acc_f=acc_function):
         """
         Test model
         Args:
@@ -147,6 +149,143 @@ class Model:
                 ).item() / test_loader.batch_size / len(test_loader)
                 test_acc += \
                     acc_f(y_pred, y_true).detach().numpy() / len(test_loader)
+
+        return test_loss, test_acc
+
+    def fit_vae(self,
+            train_loader,
+            optimizer,
+            epochs=1,
+            loss_function=l2,
+            validation_loader=None,
+            verbose=False,
+            init_start_epoch=1,
+            acc_f=acc_function):
+        """
+        Model train method
+        Args:
+            train_loader: DataLoader
+            optimizer: optimizer from torch.optim with initialized parameters
+            or tuple of (optimizer, scheduler)
+            epochs: epochs count
+            loss_function: Loss function
+            validation_loader: DataLoader
+            verbose: print evaluate validation prediction
+            init_start_epoch: start epochs number
+            acc_f: accuracy function, default single classification accuracy
+        Returns:
+        """
+        scheduler = None
+        if type(optimizer) is tuple:
+            scheduler = optimizer[1]
+            optimizer = optimizer[0]
+
+        for epoch in range(init_start_epoch, epochs + 1):
+            self.model.train()
+
+            batches_count = len(train_loader)
+            avg_epoch_loss = 0
+            avg_epoch_acc = 0
+
+            if scheduler is not None:
+                scheduler.step(epoch)
+
+            with tqdm.tqdm(total=batches_count) as pbar:
+                for i, (_x, _y_true) in enumerate(train_loader):
+                    x = _x.to(self.device)
+                    y_true = _y_true.to(self.device)
+
+                    optimizer.zero_grad()
+                    y_pred, mean, var = self.model(x)
+
+                    kl_loss = -0.5*(1 + var - (mean ** 2) - torch.exp(var)).view(-1).sum(
+                    ) / y_pred.shape[-1] / y_pred.shape[-1]
+                    loss = (loss_function(y_pred, y_true) + kl_loss) / 2
+                    loss.backward()
+                    optimizer.step()
+
+                    acc = kl_loss
+
+                    pbar.postfix = \
+                        'Epoch: {}/{}, loss: {:.8f}, acc: {:.8f}, lr: {:.8f}'.format(
+                            epoch,
+                            epochs,
+                            loss.item() / train_loader.batch_size,
+                            acc,
+                            get_lr(optimizer)
+                        )
+                    avg_epoch_loss += \
+                        loss.item() / train_loader.batch_size / batches_count
+
+                    avg_epoch_acc += acc / batches_count
+
+                    for cb in self.callbacks:
+                        cb.per_batch({
+                            'model': self,
+                            'loss': loss.item() / train_loader.batch_size,
+                            'n': (epoch - 1)*batches_count + i + 1,
+                            'x': x,
+                            'y_pred': y_pred,
+                            'y_true': y_true,
+                            'acc': acc
+                        })
+
+                    pbar.update(1)
+
+            test_loss = None
+            test_acc = None
+
+            if validation_loader is not None:
+                test_loss, test_acc = self.evaluate(
+                    validation_loader, loss_function, acc_f, verbose
+                )
+                self.model.train()
+
+            for cb in self.callbacks:
+                cb.per_epoch({
+                    'model': self,
+                    'loss': avg_epoch_loss,
+                    'val loss': test_loss,
+                    'n': epoch,
+                    'optimize_state': optimizer.state_dict(),
+                    'acc': avg_epoch_acc,
+                    'val acc': test_acc
+                })
+
+    def evaluate_vae(self,
+                 test_loader,
+                 loss_function=l2,
+                 acc_f=acc_function,
+                 verbose=False):
+        """
+        Test model
+        Args:
+            test_loader: DataLoader
+            loss_function: loss function
+            verbose: print progress
+            acc_f: accuracy function, default single classification accuracy
+
+        Returns:
+
+        """
+        self.model.eval()
+
+        test_loss = 0
+        test_acc = 0
+
+        with torch.no_grad():
+            set_range = tqdm.tqdm(test_loader) if verbose else test_loader
+            for _x, _y_true in set_range:
+                x = _x.to(self.device)
+                y_true = _y_true.to(self.device)
+                y_pred, mean, var = self.model(x)
+                kl_loss = -0.5 * (1 + var - (mean ** 2) - torch.exp(var)).view(
+                    -1).sum() / x.shape[-1] / x.shape[-2]
+                test_loss += (loss_function(
+                    y_pred, y_true
+                ).item() + kl_loss) / 2 / test_loader.batch_size / len(test_loader)
+                test_acc += \
+                    kl_loss / len(test_loader)
 
         return test_loss, test_acc
 

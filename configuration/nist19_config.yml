@@ -7,14 +7,14 @@ train:
   data: '../data/datasets/nist19/'
   permutation: '../data/datasets/nist19/nist19_permutation.npy'
 
-  lr: 0.001
+  lr: 0.01
 
-  batch_size: 256
+  batch_size: 64
   number_of_processes: 4
 
   save:
-    model: '../data/weights/nist19/'
-    every: 1
+    model: '../data/weights/nist19/resnet18/'
+    every: 10
 
   load: False
 

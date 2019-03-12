@@ -2,7 +2,7 @@ import torch
 import argparse
 import os
 import numpy as np
-from model.nist19_architectures import NIST19Net, NIST19Net2
+from model.nist19_resnet import resnet18
 from model.model import Model, get_last_epoch_weights_path
 import torch.nn.functional as F
 from utils.callbacks import (SaveModelPerEpoch, VisPlot,
@@ -42,7 +42,10 @@ def main():
     val_loader = NIST19Loader(config['train']['data'], validation=True,
                               permutation=permutation)
 
-    model = Model(NIST19Net2(train_loader.get_classes_count()), device)
+    model = Model(
+        resnet18(num_classes=train_loader.get_classes_count()),
+        device
+    )
 
     callbacks = []
 

@@ -129,6 +129,65 @@ class ConfidenceAE(nn.Module):
         return x
 
 
+class ConfidenceVAE(nn.Module):
+    def __init__(self, basic_net, latent_dim=625):
+        super(ConfidenceVAE, self).__init__()
+
+        self.basic_net = basic_net
+        self.basic_net.eval()
+
+        for p in self.basic_net.parameters():
+            p.requires_grad = False
+
+        self.mean_layer = nn.Linear(500, latent_dim)
+        self.var_layer = nn.Linear(500, latent_dim)
+
+        self.conv1 = nn.Conv2d(1, 20, 5, padding=2)
+        self.deconv1 = nn.ConvTranspose2d(20, 10, 5)
+        self.deconv2 = nn.ConvTranspose2d(10, 5, 5)
+        self.deconv3 = nn.ConvTranspose2d(5, 3, 7)
+        self.conv2 = nn.Conv2d(3, 1, 1)
+        self.dropout = nn.Dropout(0.4)
+        self.bn1 = nn.BatchNorm2d(1)
+        self.bn2 = nn.BatchNorm2d(20)
+        self.bn3 = nn.BatchNorm2d(10)
+        self.bn4 = nn.BatchNorm2d(5)
+
+    @staticmethod
+    def sampling(mean, var):
+        eps = mean.clone().normal_(0, 1)
+        return mean + torch.exp(var / 2) * eps
+
+    def forward(self, x):
+        _, x = self.basic_net(x)
+
+        z_mean = self.mean_layer(x)
+        z_var = self.mean_layer(x)
+        z = self.sampling(z_mean, z_var)
+
+        x = z.view(-1, 1, 25, 25)
+
+        x = self.bn1(x)
+        x = F.relu(self.conv1(x))
+        if self.training:
+            self.dropout(x)
+
+        x = self.bn2(x)
+        x = F.relu(self.deconv1(x))
+        if self.training:
+            self.dropout(x)
+
+        x = self.bn3(x)
+        x = F.relu(self.deconv2(x))
+        x = F.interpolate(x, scale_factor=(2, 2))
+
+        x = self.bn4(x)
+        x = F.relu(self.deconv3(x))
+
+        x = torch.sigmoid(self.conv2(x))
+        return x, z_mean, z_var
+
+
 class ConfidenceAE2(nn.Module):
     def __init__(self, basic_net):
         super(ConfidenceAE2, self).__init__()
@@ -141,7 +200,7 @@ class ConfidenceAE2(nn.Module):
 
         self.fc1 = nn.Linear(500, 1500)
         self.fc2 = nn.Linear(1500, 2500)
-        self.fc3 = nn.Linear(2500, 72*72)
+        self.fc3 = nn.Linear(2500, 72 * 72)
         self.dropout = nn.Dropout(0.2)
 
     def forward(self, x):
@@ -155,3 +214,45 @@ class ConfidenceAE2(nn.Module):
         x = x.view(-1, 1, 72, 72)
 
         return x
+
+
+class ConfidenceVAE2(nn.Module):
+    def __init__(self, basic_net, latent_dim=1500):
+        super(ConfidenceVAE2, self).__init__()
+
+        self.basic_net = basic_net
+        self.basic_net.eval()
+
+        for p in self.basic_net.parameters():
+            p.requires_grad = False
+
+        self.fc1 = nn.Linear(500, 625)
+
+        self.mean_layer = nn.Linear(625, latent_dim)
+        self.var_layer = nn.Linear(626, latent_dim)
+
+        self.fc2 = nn.Linear(1500, 2500)
+        self.fc3 = nn.Linear(2500, 72 * 72)
+        self.dropout = nn.Dropout(0.2)
+
+    @staticmethod
+    def sampling(mean, var):
+        eps = mean.clone().normal_(0, 1)
+        return mean + torch.exp(var / 2) * eps
+
+    def forward(self, x):
+        _, x = self.basic_net(x)
+
+        x = F.relu(self.fc1(x))
+        if self.training:
+            self.dropout(x)
+
+        z_mean = self.mean_layer(x)
+        z_var = self.mean_layer(x)
+        z = self.sampling(z_mean, z_var)
+
+        x = F.relu(self.fc2(z))
+        x = torch.sigmoid(self.fc3(x))
+        x = x.view(-1, 1, 72, 72)
+
+        return x, z_mean, z_var

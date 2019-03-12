@@ -1,7 +1,7 @@
 import torch
 import argparse
 import os
-from model.nist19_architectures import NIST19Net2, ConfidenceAE2
+from model.nist19_architectures import NIST19Net, ConfidenceVAE2
 from model.model import Model, get_last_epoch_weights_path
 import torch.nn.functional as F
 from utils.callbacks import (SaveModelPerEpoch, VisPlot,
@@ -13,7 +13,7 @@ import yaml
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='NIST19 AE train script')
+    parser = argparse.ArgumentParser(description='NIST19 VAE train script')
     parser.add_argument('--config', required=True, type=str,
                         help='Path to configuration yml file.')
     parser.add_argument('--epochs', type=int, default=1, metavar='N',
@@ -40,12 +40,12 @@ def main():
                               for_ae=True)
 
     base_model = Model(
-        NIST19Net2(train_loader.get_classes_count(), True),
+        NIST19Net(train_loader.get_classes_count(), True),
         device
     )
     base_model.load(config['train']['base_model_weights'])
 
-    model = Model(ConfidenceAE2(base_model.model), device)
+    model = Model(ConfidenceVAE2(base_model.model), device)
 
     callbacks = []
 
@@ -67,7 +67,7 @@ def main():
 
     if config['visualization']['use_visdom']:
         plots = VisPlot(
-            'NIST19 AE model',
+            'NIST19 VAE model',
             server=config['visualization']['visdom_server'],
             port=config['visualization']['visdom_port']
         )
@@ -77,6 +77,13 @@ def main():
                                    [
                                        'train binary cross entropy',
                                        'validation binary cross entropy'
+                                   ])
+
+        plots.register_scatterplot('train validation acc as KLloss per_epoch', 'Epochs',
+                                   'KL Loss',
+                                   [
+                                       'train KL',
+                                       'validation KL'
                                    ])
         callbacks.append(plots)
 
