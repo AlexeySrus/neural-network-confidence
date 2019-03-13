@@ -199,7 +199,7 @@ class Model:
                     y_pred, mean, var = self.model(x)
 
                     kl_loss = -0.5*(1 + var - (mean ** 2) - torch.exp(var)).view(-1).sum(
-                    ) / y_pred.shape[-1] / y_pred.shape[-1]
+                    ) / y_pred.shape[-1] / y_pred.shape[-2]
                     loss = (loss_function(y_pred, y_true) + kl_loss) / 2
                     loss.backward()
                     optimizer.step()
@@ -236,7 +236,7 @@ class Model:
             test_acc = None
 
             if validation_loader is not None:
-                test_loss, test_acc = self.evaluate(
+                test_loss, test_acc = self.evaluate_vae(
                     validation_loader, loss_function, acc_f, verbose
                 )
                 self.model.train()

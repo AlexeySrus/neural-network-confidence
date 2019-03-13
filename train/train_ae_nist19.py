@@ -1,7 +1,7 @@
 import torch
 import argparse
 import os
-from model.nist19_architectures import NIST19Net, ConfidenceVAE2
+from model.nist19_resnet import resnet18, ConfidenceVAE2
 from model.model import Model, get_last_epoch_weights_path
 import torch.nn.functional as F
 from utils.callbacks import (SaveModelPerEpoch, VisPlot,
@@ -40,7 +40,7 @@ def main():
                               for_ae=True)
 
     base_model = Model(
-        NIST19Net(train_loader.get_classes_count(), True),
+        resnet18(num_classes=train_loader.get_classes_count(), for_ae=True),
         device
     )
     base_model.load(config['train']['base_model_weights'])
@@ -131,7 +131,7 @@ def main():
         val_loader, batch_size=batch_size, num_workers=n_jobs
     )
 
-    model.fit(
+    model.fit_vae(
         train_dataset,
         (optimizer, scheduler),
         args.epochs,

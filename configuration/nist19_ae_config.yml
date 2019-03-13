@@ -7,19 +7,19 @@ train:
   data: '../data/datasets/nist19/'
   permutation: '../data/datasets/nist19/nist19_permutation.npy'
 
-  lr: 0.01
+  lr: 0.001
 
   batch_size: 64
   number_of_processes: 4
 
   save:
-    model: '../data/weights/nist19_2/vae_2/'
+    model: '../data/weights/nist19/resnet18/vae/'
     every: 100
 
   load: True
 
-  base_model_weights: '../data/weights/nist19/model-4.trh'
-  ae_model_weights: '../data/weights/nist19_2/ae_2/model-60.trh'
+  base_model_weights: '../data/weights/nist19/resnet18/model-30.trh'
+  ae_model_weights: ''
 
   image:
     every: 10

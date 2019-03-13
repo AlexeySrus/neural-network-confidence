@@ -96,6 +96,8 @@ class NIST19Loader:
         return _label_img_store
 
     def __len__(self):
+        if self.permutation is not None:
+            return len(self.permutation)
         return len(self.x)
 
     def __getitem__(self, idx):
