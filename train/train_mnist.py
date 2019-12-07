@@ -86,10 +86,10 @@ def main():
         weight_decay=1E-4,
         amsgrad=True
     )
-    scheduler = torch.optim.lr_scheduler.StepLR(
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
-        args.epochs // 50,
-        gamma=0.5
+        factor=0.5,
+        verbose=True
     )
 
     if config['train']['load']:
@@ -121,7 +121,8 @@ def main():
         args.epochs,
         F.binary_cross_entropy,
         init_start_epoch=start_epoch + 1,
-        validation_loader=val_dataset
+        validation_loader=val_dataset,
+        is_epoch_number_scheduler=False
     )
 
 

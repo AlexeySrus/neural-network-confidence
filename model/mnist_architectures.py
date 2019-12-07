@@ -44,9 +44,17 @@ class ConfidenceAE(nn.Module):
             p.requires_grad = False
 
         self.fc1 = nn.Linear(500, 700)
+        self.drop = nn.Dropout(0.5)
         self.fc2 = nn.Linear(700, 28*28)
 
     def forward(self, x):
+        _, x1 = self.basic_net(x)
+        x = F.relu(self.drop(self.fc1(x1)))
+        x = torch.sigmoid(self.fc2(x))
+        x = x.view(-1, 1, 28, 28)
+        return x
+
+    def inference(self, x):
         _, x1 = self.basic_net(x)
         x = F.relu(self.fc1(x1))
         x = torch.sigmoid(self.fc2(x))

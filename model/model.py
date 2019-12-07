@@ -26,7 +26,8 @@ class Model:
             validation_loader=None,
             verbose=False,
             init_start_epoch=1,
-            acc_f=acc_function):
+            acc_f=acc_function,
+            is_epoch_number_scheduler=True):
         """
         Model train method
         Args:
@@ -52,7 +53,7 @@ class Model:
             avg_epoch_loss = 0
             avg_epoch_acc = 0
 
-            if scheduler is not None:
+            if scheduler is not None and is_epoch_number_scheduler:
                 scheduler.step(epoch)
 
             with tqdm.tqdm(total=batches_count) as pbar:
@@ -106,6 +107,9 @@ class Model:
                     validation_loader, loss_function, verbose
                 )
                 self.model.train()
+
+                if scheduler is not None and not is_epoch_number_scheduler:
+                    scheduler.step(test_loss)
 
             for cb in self.callbacks:
                 cb.per_epoch({
