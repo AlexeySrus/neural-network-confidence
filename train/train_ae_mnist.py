@@ -35,7 +35,7 @@ def main():
     batch_size = config['train']['batch_size']
     n_jobs = config['train']['number_of_processes']
 
-    base_model = Model(MNISTNet(), device)
+    base_model = Model(MNISTNet(for_ae=True), device)
     base_model.load(config['train']['base_model_weights'])
 
     model = Model(ConfidenceAE(base_model.model), device)
@@ -117,7 +117,7 @@ def main():
         train_dataset,
         optimizer,
         args.epochs,
-        F.binary_cross_entropy,
+        F.mse_loss,
         init_start_epoch=start_epoch + 1,
         validation_loader=val_dataset
     )

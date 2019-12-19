@@ -7,12 +7,12 @@ import torch.nn.functional as F
 from utils.callbacks import (SaveModelPerEpoch, VisPlot,
                                       SaveOptimizerPerEpoch)
 from torch.utils.data import DataLoader
-from utils.loaders import load_mnist, get_loaders
+from utils.loaders import KannadaMNIST
 import yaml
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='MNIST train script')
+    parser = argparse.ArgumentParser(description='KANNADA MNIST train script')
     parser.add_argument('--config', required=True, type=str,
                         help='Path to configuration yml file.')
     parser.add_argument('--epochs', type=int, default=1, metavar='N',
@@ -34,7 +34,10 @@ def main():
     batch_size = config['train']['batch_size']
     n_jobs = config['train']['number_of_processes']
 
-    model = Model(MNISTNet(), device)
+    train_loader = KannadaMNIST(config['train']['dataset_path'])
+    val_loader = KannadaMNIST(config['train']['dataset_path'], True)
+
+    model = Model(MNISTNet(n_classes=train_loader.n_classes), device)
 
     callbacks = []
 
@@ -56,7 +59,7 @@ def main():
 
     if config['visualization']['use_visdom']:
         plots = VisPlot(
-            'MNIST classification model',
+            'KANNADA classification model',
             server=config['visualization']['visdom_server'],
             port=config['visualization']['visdom_port']
         )
@@ -83,7 +86,7 @@ def main():
     optimizer = torch.optim.Adam(
         model.model.parameters(),
         lr=config['train']['lr'],
-        weight_decay=1E-9,
+        # weight_decay=1E-9,
         amsgrad=True
     )
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -105,15 +108,16 @@ def main():
             model.load(weight_path)
             optimizer.load_state_dict(torch.load(optim_path))
 
-    train_loader, val_loader = get_loaders(load_mnist())
-
     train_dataset = DataLoader(
         train_loader, batch_size=batch_size, num_workers=n_jobs
     )
 
-    val_dataset = DataLoader(
-        val_loader, batch_size=batch_size, num_workers=n_jobs
-    )
+    if config['validation']['use_validation']:
+        val_dataset = DataLoader(
+            val_loader, batch_size=batch_size, num_workers=n_jobs
+        )
+    else:
+        val_dataset = None
 
     model.fit(
         train_dataset,

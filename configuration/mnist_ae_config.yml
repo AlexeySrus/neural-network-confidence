@@ -13,13 +13,13 @@ train:
     model: '../data/weights/mnist/ae/'
     every: 10
 
-  load: True
+  load: False
 
-  base_model_weights: '../data/weights/mnist/model-70.trh'
+  base_model_weights: '../data/weights/mnist/model-100.trh'
   ae_model_weights: '../data/weights/mnist/ae/model-10.trh'
 
   image:
-    every: 10
+    every: 1000
 
 validation:
   use_validation: True

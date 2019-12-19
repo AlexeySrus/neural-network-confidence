@@ -69,8 +69,8 @@ class Model:
                     optimizer.step()
 
                     acc = acc_f(
-                        flatten(y_pred),
-                        flatten(y_true)
+                        y_pred,
+                        y_true
                     )
 
                     pbar.postfix = \
@@ -147,7 +147,7 @@ class Model:
             for _x, _y_true in set_range:
                 x = _x.to(self.device)
                 y_true = _y_true.to(self.device)
-                y_pred = self.model(x)
+                y_pred = self.model.inference(x)
                 test_loss += loss_function(
                     y_pred, y_true
                 ).item() / test_loader.batch_size / len(test_loader)
@@ -282,7 +282,7 @@ class Model:
             for _x, _y_true in set_range:
                 x = _x.to(self.device)
                 y_true = _y_true.to(self.device)
-                y_pred, mean, var = self.model(x)
+                y_pred, mean, var = self.model.inference(x)
                 kl_loss = -0.5 * (1 + var - (mean ** 2) - torch.exp(var)).view(
                     -1).sum() / x.shape[-1] / x.shape[-2]
                 test_loss += (loss_function(
@@ -311,7 +311,7 @@ class Model:
             set_range = tqdm.tqdm(predict_loader) if verbose else predict_loader
             for _x in set_range:
                 x = _x.to(self.device)
-                y_pred.append(self.model(x))
+                y_pred.append(self.model.inference(x))
 
         return torch.cat(y_pred, dim=0)
 

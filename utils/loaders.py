@@ -1,9 +1,11 @@
+from torch.utils.data import Dataset
 from keras.datasets import mnist, cifar10
 from sklearn.utils import shuffle
 import numpy as np
 import os
 import cv2
 from utils.preprocessing import resize_image
+import torch
 
 
 class Loader:
@@ -237,3 +239,44 @@ def load_cifar10_for_ae():
 def get_loaders(load_data):
     x_train, y_train, x_test, y_test = load_data
     return Loader(x_train, y_train), Loader(x_test, y_test)
+
+
+class KannadaMNIST(Dataset):
+    def __init__(self, table_path, validation=False, for_ae=False):
+        with open(table_path, 'r') as f:
+            table_lines = [l.rstrip() for l in f][1:]
+
+        parsed_table_lines = [
+            [int(d) for d in l.split(',')]
+            for l in table_lines
+        ]
+
+        self.labels = [
+            l[0]
+            for l in parsed_table_lines
+        ]
+        self.images = [
+            np.array(l[1:]).reshape(28, 28)
+            for l in parsed_table_lines
+        ]
+
+        self.n_classes = len(list(set(self.labels)))
+
+        if not validation:
+            self.images = self.images[:len(self.images) // 2]
+            self.labels = self.labels[:len(self.images) // 2]
+        else:
+            self.images = self.images[-len(self.images) // 2:]
+            self.labels = self.labels[-len(self.images) // 2:]
+
+    def one_hot(self, x):
+        res = np.zeros(self.n_classes)
+        res[x - 1] = 1
+        return res
+
+    def __len__(self):
+        return len(self.labels)
+
+    def __getitem__(self, idx):
+        return torch.FloatTensor(self.images[idx]).unsqueeze(0) / 255.0, \
+               torch.FloatTensor(self.one_hot(self.labels[idx]))
